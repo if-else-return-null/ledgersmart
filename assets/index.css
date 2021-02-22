@@ -1,0 +1,47 @@
+/*
+<?php
+header("Content-type: text/css; charset: UTF-8");
+
+$mainbg ="#004669"; #  brown #755019 - maroon #690000 - pale green #696900
+$logboxbg ="#4D7E96"; #  light brown #B89470       brown #755019  maroon #690000      #004669   #4D7E96  #99B5C3
+$alt1bg ="#3973ac";
+
+$maintxt = "#339933"; # green #339933
+$alt1txt = "#006699"; # pale blue #006699
+$alt2txt = "#FFFFFF"; #
+
+
+?>
+*/
+:root {
+  --mainbg: #004669;
+  --alt1txt: #006699;
+  --alt2txt: #FFFFFF;
+  --alt1bg: #3973ac;
+   --alt2bg: #3468ac;
+}
+
+
+html {
+/*height: 80%;*/
+}
+
+body { height:100%; width: 100%; overflow: hidden; background:var(--mainbg); font-family: Consolas, monospace;}
+
+
+a:link,a:visited,a:hover,a:active { color: #006699; text-decoration:none; }
+
+input[type=submit] {    border-radius:5px;  }
+
+.fltrt {float: right;}
+.fltlft { float: left;}
+.clearfloat { clear:both;height:0;font-size: 1px;line-height: 0px;}
+.statbar {width:90%;padding:0px;color:green;}
+.smtext { font-size:85%;}
+.medtext { font-size:150%;}
+.redtxt {color:red;}
+
+#side_panel { position: absolute; width: 20%; height: 100%; top: 0px; left: 0px; overflow:auto; background: var(--alt1bg); }
+#workarea {position: absolute; width: 80%; height: 100%; top: 0px; left: 20%; overflow:auto; background: var(--alt2bg); }
+
+.worktab { width: 100%; min-height: 100%; background: var(--mainbg); }

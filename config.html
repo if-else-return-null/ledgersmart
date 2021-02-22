@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=2.0" />
+    <link rel='stylesheet' type='text/css' href='assets/config.css' />
+    <title>LedgerSmart Config</title>
+</head>
+<body>
+    <div id="loading_div">
+        LOADING.....
+    </div>
+    <div id="main_config">
+        <input type="radio" name="appmode" id="use_as_both" value=""> Run server and client on this device<br><br>
+        <input type="radio" name="appmode" id="use_as_server" value=""> Run server only on this device<br><br>
+
+        <input type="radio" name="appmode" id="use_as_client" value=""> Connect to a server<br>
+
+        <hr>
+        <span id="client_connect_options">
+            Connect Options<br>
+            Address <input type="text" id="client_server_ip" value=""><br>
+            Port <input type="number" step="1" id="client_server_port" value="">
+            <br>
+        </span>
+        <span id="server_options">
+            Server Options<br>
+            <input type="radio" name="servermode" id="server_local_only" value=""> Available this device only<br>
+            <input type="radio" name="servermode" id="server_network_wide" value=""> Available network wide <br>
+            Port <input type="number" step="1" id="server_port" value="25444">
+            <br>
+        </span>
+        <hr>
+        <button type="button" id="save_config" >Save</button>
+        <button type="button" id="cancel_config">Cancel</button>
+    </div>
+    <div id="config_saved">
+        <center>
+        <h2>Configuration saved. <br> Click close then relaunch LedgerSmart</h2>
+        <h3>To change this configuration again launch ledgersmart with the -config option</h3>
+        <h3><button type="button" id="close_config">Close</button></h3>
+    </div>
+
+
+
+
+
+
+
+
+    <script src="./js/config.js"></script>
+</body>
+</html>
