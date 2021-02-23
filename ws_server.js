@@ -1,9 +1,10 @@
+#!/usr/bin/env node
 
 const os = require('os')
 const fs = require('fs');
 const { fork } = require('child_process');
 //const { spawn } = require('child_process');
-//const WebSocket = require('ws');
+const WebSocket = require('ws');
 var https = require('https');
 
 
@@ -30,3 +31,7 @@ function stopServer() {
     console.log("'WS-> Websocket server is stopping", config);
     setTimeout(function(){process.exit();},1000)
 }
+
+
+// request the config from parent before starting ws server
+process.send({type:"request_config"})

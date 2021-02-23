@@ -6,6 +6,10 @@ const path = require('path')
 //const WebSocket = require('ws');
 let args = process.argv
 
+// change this to false before packging
+let devmode = JSON.parse( fs.readFileSync(path.join(__dirname, "devmode.json") ,'utf8') )
+console.log(devmode);
+
 const gotTheLock = app.requestSingleInstanceLock()
 
 
@@ -301,7 +305,7 @@ function startWebSocketServer(mode) {
     console.log("forking websocket server");
     // build the ws_server file
     //*** maybe remove this for release build and just included the concated file
-    let start = "#!/usr/bin/env node\n"
+    let start = `#!/usr/bin/env node` + "\n" +`const WebSocket = require('${path.join(__dirname,"node_modules","ws")}');` + "\n"
 
     fs.writeFileSync(app_data_path + "ws_server.js", start)
     WsFiles.forEach((item, i) => {
@@ -309,6 +313,7 @@ function startWebSocketServer(mode) {
     });
     // fork the ws_server file
     ws_server = fork(app_data_path + "ws_server.js");
+    //ws_server = fork( path.join(__dirname, "ws_server.js") );
 
     ws_server.on('message', (msg) => {
         console.log('Message from ws_server', msg);
