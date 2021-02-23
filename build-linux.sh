@@ -14,7 +14,8 @@ cp -r $source_dir $build_dir
 cd $build_dir
 
 # concat the websocket server files
-cat ws/header.js ws/server.js
+cat ws/header.js ws/server.js > ws_server.js
+
 # turn devmode off
 echo -e '{"active":false}\n' > $build_dir/devmode.json
 
