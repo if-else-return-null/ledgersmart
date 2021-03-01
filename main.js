@@ -6,9 +6,6 @@ const path = require('path')
 //const WebSocket = require('ws');
 let args = process.argv
 
-// change this to false before packging
-let devmode = JSON.parse( fs.readFileSync(path.join(__dirname, "devmode.json") ,'utf8') )
-console.log(devmode);
 
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -20,13 +17,25 @@ const user = process.env.USER
 const os_platform = process.platform
 let app_data_path
 let config = {
-    appmode:"ask", // server, client , both
-    theme:"default",
-    serverRestrict: true,
-    server_port: 25444,
-    server_ip: "127.0.0.1",
-    client_port: 25444,
-    client_ip: "127.0.0.1"
+    client:{
+        appmode:"ask", // server, client , both
+        theme:"default",
+        client_port: 25444,
+        client_ip: "127.0.0.1"
+    },
+    server:{
+        server_port: 25444,
+        server_ip: "0.0.0.0",
+        server_https: false,
+        https_cert: "/path/to/cert.pem",
+        https_key: "/path/to/key.pem",
+        remove_cert_key: false, // see start_as_root.sh for more info
+        message_json: true,
+        auth_attempt_limit: 5,
+        ban_interval:1800000,
+        max_rate_per_sec: 20,
+        ban_on_rate_limit: true
+    }
 }
 // check for config
 if (os_platform === "win32"){
@@ -70,6 +79,7 @@ function checkArgs(cmdargs = args) {
             optionSet = true
             return;
         }
+        /*
         // start in server only mode
         if (item === "-server" ) {
             config.appmode = "server"
@@ -77,6 +87,7 @@ function checkArgs(cmdargs = args) {
             optionSet = true
             return;
         }
+        */
         // show the config window
         if (item === "-config" ) {
             console.log("config option");
@@ -89,7 +100,7 @@ function checkArgs(cmdargs = args) {
     // default to the mode specified in config
     if (optionSet === false){
         console.log("starting normal by config setting");
-        startAppInMode(config.appmode)
+        startAppInMode(config.client.appmode)
     }
 
 
@@ -101,7 +112,7 @@ function showHelp() {
 }
 
 function startAppInMode(mode) {
-    if (mode === "server" || mode === "both") {
+    if (mode === "both") {
         startWebSocketServer(mode)
     }
     if (mode === "client") {
@@ -121,7 +132,8 @@ function showConfigWindow () {
         width: 1024,
         height: 768,
         webPreferences: {
-            preload: path.join(__dirname, './js/preload.js')
+
+            preload: path.join(__dirname, 'preload.js')
         },
         icon: path.join(__dirname, 'assets/icons/logo.png')
     })
@@ -143,7 +155,8 @@ function createWindow () {
         width: 1024,
         height: 768,
         webPreferences: {
-            preload: './js/preload.js'
+            
+            preload: path.join(__dirname, 'preload.js')
         },
         icon: path.join(__dirname, 'assets/icons/logo.png')
     })
@@ -164,9 +177,11 @@ app.whenReady().then(() => {
         else if (lastarg === "-config") {
             console.log("You must close any existing ledgersmart instances before running -config");
         }
+        /*
         else if (lastarg === "-server") {
             console.log("Attempting to start server if not already running");
         }
+        */
         else {
             console.log("Adding new window in existing instance");
         }
@@ -198,6 +213,7 @@ function handleAnotherInstance(event, commandLine, workingDirectory) {
     if (lastoption === "-help") {
         // do nothing
     }
+    /*
     else if (lastoption === "-server") {
         // check to see that the server is running if not start it
         if (ws_server === null) {
@@ -207,8 +223,9 @@ function handleAnotherInstance(event, commandLine, workingDirectory) {
             console.log("The server is already running");
         }
     }
+    */
     else if (lastoption === "-config") {
-        // if there are any open windows focus them and notify to exit before altering config
+        //*** if there are any open windows focus them and notify to exit before altering config
 
     }
     else {
@@ -233,7 +250,7 @@ stdin.on('data', function(key){
     console.log(toUnicode(key));
     if (key == '\u0003') { //ctrl-c
         console.log("ctrl-c pressed");
-        if (config.appmode === "both" || config.appmode === "server"){
+        if (config.client.appmode === "both" ){
             ws_server.send({type:"shutdown_server"})
         } else {
             checkOkToQuit()
@@ -259,15 +276,16 @@ function toUnicode(theString) {
 
 
 function checkOkToQuit() {
-    if (config.appmode === "both" && ws_server !== null) {
+    if (config.client.appmode === "both" && ws_server !== null) {
         ws_server.send({type:"shutdown_server"})
         return
     }
-
+    /*
     else if (config.appmode === "server" && ws_server !== null) {
         //ws_server.send({type:"shutdown_server"})
         return
     }
+    */
     else {
         process.stdin.setRawMode(false);
         app.quit()
@@ -299,26 +317,19 @@ ipcMain.on("config_window", (event, data) => {
 
 
 //-----------------------Websocket Server---------------------------------------
-let WsFiles = ["header.js", "server.js"]
+
 let ws_server = null
 function startWebSocketServer(mode) {
     console.log("forking websocket server");
-    // build the ws_server file
-    //*** maybe remove this for release build and just included the concated file
-    let start = `#!/usr/bin/env node` + "\n" +`const WebSocket = require('${path.join(__dirname,"node_modules","ws")}');` + "\n"
 
-    fs.writeFileSync(app_data_path + "ws_server.js", start)
-    WsFiles.forEach((item, i) => {
-        fs.appendFileSync(app_data_path + "ws_server.js", fs.readFileSync( path.join(__dirname, "ws" , item ),'utf8'));
-    });
     // fork the ws_server file
-    ws_server = fork(app_data_path + "ws_server.js");
-    //ws_server = fork( path.join(__dirname, "ws_server.js") );
+
+    ws_server = fork( path.join(__dirname, "ws_server.js") );
 
     ws_server.on('message', (msg) => {
         console.log('Message from ws_server', msg);
         if (msg.type === "request_config") {
-            ws_server.send({type:"config_info", config:config})
+            ws_server.send({type:"config_info", config:config.server, app_data_path:app_data_path, client:config.client})
         }
         if (msg.type === "websocket_ready") {
             if (mode === "both") {

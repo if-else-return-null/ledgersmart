@@ -16,7 +16,7 @@
     "financial"
   ],
   "bin": {
-    "lscli": "./cli.js"
+    "ls-server-cli": "./ws_server.js"
   },
   "author": "ReturnNull",
   "license": "MIT",
