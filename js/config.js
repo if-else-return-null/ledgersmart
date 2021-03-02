@@ -56,13 +56,7 @@ function handleMainRadio(ev) {
         BYID("server_options").style.display = "block"
         BYID("client_connect_options").style.display = "none"
     }
-    /*
-    if (mode === "use_as_server") {
-        config.appmode = "server"
-        BYID("server_options").style.display = "block"
-        BYID("client_connect_options").style.display = "none"
-    }
-    */
+    
     if (mode === "use_as_client") {
         config.client.appmode = "client"
         BYID("server_options").style.display = "none"

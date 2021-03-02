@@ -192,12 +192,10 @@ WS.startServer = function () {
         })
     })
 
-
-
     // the server is ready for clients
-    if (WS.is_subprocess){
-        process.send({type:"websocket_ready"})
-    }
+    handle.wsServerIsReady()
+
+    
 
 }
 

@@ -8,7 +8,7 @@ const path = require('path')
 console.log("regenerating ws_server.js");
 
 // update this array according to your needs
-let WsFiles = ["header.js", "server.js", "handle.js"]
+let WsFiles = ["header.js", "server.js", "utility.js", "lsdata.js", "handle.js", "startup.js"]
 
 let start = "#!/usr/bin/env node\n"
 

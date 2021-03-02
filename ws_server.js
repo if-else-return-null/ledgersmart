@@ -9,6 +9,7 @@ var https = require('https');
 let WS = {}
 WS.args = process.argv
 WS.is_subprocess = true
+if (!process.send) { WS.is_subprocess = false }
 
 WS.config_file = null
 WS.show_help = false
@@ -34,7 +35,11 @@ WS.server = null
 WS.loadComfig = function (){
     if (fs.existsSync(WS.config_file)) {
         console.log('WS: Loading config file.');
-        WS.config = JSON.parse( fs.readFileSync(WS.config_file , 'utf8') )
+        let temp = JSON.parse( fs.readFileSync(WS.config_file , 'utf8') )
+        //WS.config = JSON.parse( fs.readFileSync(WS.config_file , 'utf8') )
+        for (let item in temp ){
+            WS.config[item] = temp[item]
+        }
     }
 }
 
@@ -53,8 +58,7 @@ WS.showHelp = function () {
 
 WS.init = function(){
     // check if run as a sub-process
-    if (!process.send) {
-        WS.is_subprocess = false
+    if (WS.is_subprocess === false) {
 
         // check for commandline args then start the server
         WS.args.forEach((item, i) => {
@@ -92,7 +96,7 @@ WS.init = function(){
         // if run as a subprocess setup messaging and request config
         process.on('message', (msg) => {
             handle.parentMessage(msg)
-            
+
         });
         // request the config from parent before starting ws server
         process.send({type:"request_config"})
@@ -320,12 +324,10 @@ WS.startServer = function () {
         })
     })
 
-
-
     // the server is ready for clients
-    if (WS.is_subprocess){
-        process.send({type:"websocket_ready"})
-    }
+    handle.wsServerIsReady()
+
+    
 
 }
 
@@ -351,13 +353,118 @@ WS.sendToAllClients = function (packet, checkAuth = true) {
     }
 }
 
+// declare the handle object
+let handle = {}
+
+// update help info for ledgersmart
+WS.help.cli_options["--config"] = "Specify a config file to use. Note that this will only override valid server config properties"
+
+
+function getDateNow(secs) {
+    let d
+    if (secs === undefined) { d = new Date() } else { d = new Date(secs) }
+
+    let datenow  = [  d.getFullYear(),  ('0' + (d.getMonth() + 1)).slice(-2),  ('0' + d.getDate()).slice(-2)].join('-');
+    return datenow
+}
+
+function getTimeNow(secs) {
+    let d
+    if (secs === undefined) { d = new Date() } else { d = new Date(secs) }
+    let datenow  = [    ('0' + d.getHours() ).slice(-2),  ('0' + d.getMinutes()).slice(-2)].join(':');
+    return datenow
+}
+
+function cloneOBJ(obj) { return JSON.parse(JSON.stringify(obj)) }
+
+// this is a mirror of config.client in main.js
+let lsconfig = {
+    appmode:"ask",
+    theme:"default",
+    client_port: 25444,
+    client_ip: "127.0.0.1",
+    app_data_path: null
+}
+
+function saveConfig() {
+    let config = {}
+    config.server = WS.config
+    config.client = lsconfig
+    fs.writeFileSync(lsconfig.app_data_path + "config.json", JSON.stringify(config,null,4) ) //
+}
+
+// used in standalone server mode to get or create config file
+function getConfigInfoCli() {
+    const user = process.env.USER
+    const os_platform = process.platform
+    let app_data_path
+    // check for config
+    if (os_platform === "win32"){
+        // for windows we will convert to forward slashes like linux
+        app_data_path = process.env.APPDATA.replace(/\\/g, "/")}
+    else {
+        app_data_path = process.env.HOME
+    }
+    app_data_path += "/.ledgersmart/"
+    lsconfig.app_data_path = app_data_path
+
+    if ( !fs.existsSync( app_data_path ) ) {
+        console.log("LS: CREATE: user data folder", app_data_path);
+        fs.mkdirSync( app_data_path + "data", { recursive: true } )
+        saveConfig()
+
+    } else {
+        if (fs.existsSync(app_data_path + "config.json")) {
+            console.log('LOAD: config.json.');
+            let config = JSON.parse( fs.readFileSync(app_data_path + "config.json",'utf8') )
+            WS.config = config.server
+            lsconfig = config.client
+        } else {
+            saveConfig()
+        }
+
+    }
+
+    return true
+
+}
+
+let LSDATA = {}
+let LsDataStoreList = []
+function loadDataStores() {
+    console.log("LS: Begin loading data stores");
+    let path = lsconfig.app_data_path + "data"
+    let filelist =  fs.readdirSync( path , { withFileTypes:true })
+    for (var i = 0; i < filelist.length; i++) {
+        //console.log(filelist[i]);
+        if (filelist[i].isDirectory()) {
+            let storeid = filelist[i].name
+            if ( fs.existsSync( path + "/" + storeid + "/store.json" )  ){
+                console.log("found a ledgersmart data store folder");
+                LSDATA[storeid] = {
+                    info: JSON.parse( fs.readFileSync(path + "/" + storeid + "/store.json",'utf8') ),
+                    dates:{}
+                }
+                // load in all the date files
+                let datelist =  fs.readdirSync( path + "/" + storeid + "/dates" , {})
+                for (var i = 0; i < datelist.length; i++) {
+                    let dateid = datelist[i].replace(".json", "")
+                    LSDATA[storeid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + storeid + "/dates/" + datelist[i] ,'utf8') )
+                }
+                LsDataStoreList.push(LSDATA[storeid].info.name)
+            }
+        }
+    }
+    console.log("LS: Finished loading data stores");
+}
+
 // from this point you would define the all the logic, functions, data, etc that is
 // need for your server to do its job. Whatever that might be.
 // all the functions in the handle object are intended to modified for your specific use case
 // Then call WS.init() when your code is ready for the server to start up
 
 
-let handle = {}
+
 
 
 handle.wsServerError = function (err){
@@ -369,6 +476,7 @@ handle.wsServerClose = function (){
     console.log("WS: server has closed");
     process.exit()
 }
+
 
 handle.wsClientMessage = function (client_id, packet){
     console.log(`WS: Message from client_id ${ client_id }`, packet );
@@ -407,6 +515,8 @@ handle.parentMessage = function (msg){
         for (let item in msg.config ){
             WS.config[item] = msg.config[item]
         }
+        // set ledgersmarts config
+        lsconfig = msg.client
         WS.startServer()
     }
     if (msg.type === "shutdown_server") {
@@ -414,7 +524,27 @@ handle.parentMessage = function (msg){
     }
 }
 
+// setup config and data info for standalone server
+if (WS.is_subprocess === false) {
+    let getdata = getConfigInfoCli()
+    console.log("LS: Got config data for standalone server", getdata);
+} else {
+    // nothing to do here WS.init will request the config from the
+    // parent process after it sets up messageing
+}
 
+handle.wsServerIsReady = function () {
+    // do any other tasks for server startup
+    // get a list data stores
+    loadDataStores()
+        
+    // let the parent know were ready for clients
+    if (WS.is_subprocess){
+        process.send({type:"websocket_ready"})
+    } else {
+        console.log("WS: Websocket Ready")
+    }
+}
 
 
 WS.init()
