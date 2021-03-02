@@ -1,5 +1,5 @@
 
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, ipcMain, Menu} = require('electron')
 const { fork } = require('child_process');
 const fs = require('fs')
 const path = require('path')
@@ -45,6 +45,7 @@ else {
     app_data_path = process.env.HOME
 }
 app_data_path += "/.ledgersmart/"
+
 
 
 
@@ -132,7 +133,7 @@ function showConfigWindow () {
         width: 1024,
         height: 768,
         webPreferences: {
-
+            contextIsolation: false,
             preload: path.join(__dirname, 'preload.js')
         },
         icon: path.join(__dirname, 'assets/icons/logo.png')
@@ -155,7 +156,7 @@ function createWindow () {
         width: 1024,
         height: 768,
         webPreferences: {
-            
+            contextIsolation: false,
             preload: path.join(__dirname, 'preload.js')
         },
         icon: path.join(__dirname, 'assets/icons/logo.png')
@@ -169,6 +170,7 @@ function createWindow () {
 
 
 app.whenReady().then(() => {
+    //console.log("local menu",Menu.getApplicationMenu());
     if (!gotTheLock) {
         let lastarg = args.pop()
         if (lastarg === "-help") {
@@ -204,6 +206,17 @@ app.on('window-all-closed', function () {
 
     checkOkToQuit()
 
+})
+
+app.on('will-quit',function(event) {
+    console.log("going to quit");
+    if (ws_server !== null) {
+        console.log("server not closed");
+        event.preventDefault()
+        checkOkToQuit()
+    } else {
+
+    }
 })
 
 function handleAnotherInstance(event, commandLine, workingDirectory) {
