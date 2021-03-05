@@ -2,17 +2,24 @@ let main_radio = document.getElementsByName('appmode');
 let BYID = function (id){ return document.getElementById(id) }
 let config
 
+// when appmode is both the client settings will mirror the server server settings
 // serverRestrict
 BYID("server_local_only").addEventListener('change', () => {
     //config.serverRestrict = true
     config.server.server_ip = "127.0.0.1"
+    config.client.client_ip = "127.0.0.1"
+    BYID("client_server_ip").value = config.server.server_ip
 })
 BYID("server_network_wide").addEventListener('change', () => {
     //config.serverRestrict = false
     config.server.server_ip = "0.0.0.0"
+    config.client.client_ip = "0.0.0.0"
+    BYID("client_server_ip").value = config.server.server_ip
 })
 BYID("server_port").addEventListener('change', () => {
     config.server.server_port = BYID("server_port").value
+    config.client.client_port = BYID("server_port").value
+    BYID("client_server_port").value = BYID("server_port").value
     // add checks or min max for port numver
 })
 // clinet ip/port
@@ -23,6 +30,17 @@ BYID("client_server_ip").addEventListener('change', () => {
 BYID("client_server_port").addEventListener('change', () => {
     config.client.client_port = BYID("client_server_port").value
     // add checks or min max for port numver
+})
+// clent Protocal
+BYID("client_protocal_ws").addEventListener('change', () => {
+    //config.serverRestrict = true
+    console.log("ws_change");
+    config.client.client_protocal = "ws"
+})
+BYID("client_protocal_wss").addEventListener('change', () => {
+    //config.serverRestrict = false
+    console.log("wss_change");
+    config.client.client_protocal = "wss"
 })
 
 
@@ -49,14 +67,23 @@ for (var i = 0; i < main_radio.length; i++) {
 
 
 function handleMainRadio(ev) {
-    console.log("main_radio", ev.target.id);
-    let mode = ev.target.id
+    let mode
+    if (typeof(ev) === "string") {
+        mode = ev
+    } else {
+        mode = ev.target.id
+    }
+    console.log("main_radio", mode);
+
     if (mode === "use_as_both") {
         config.client.appmode = "both"
+        config.client.client_protocal = "ws"
+        config.client.client_ip =  config.server.server_ip
+        config.client.client_port =  config.server.server_port
         BYID("server_options").style.display = "block"
         BYID("client_connect_options").style.display = "none"
     }
-    
+
     if (mode === "use_as_client") {
         config.client.appmode = "client"
         BYID("server_options").style.display = "none"
@@ -69,15 +96,23 @@ function handleFromMainProcess(data) {
     console.log("from_mainProcess",data);
     if (data.type === "current_config") {
         config = data.config
-        if (config.client.appmode !== "ask") {
-            BYID("use_as_" + config.client.appmode).checked = true
-
-
-        } else {
+        if (config.client.appmode === "ask"){
             // default to both
             config.client.appmode = "both"
+        }
+
+        if (config.client.appmode === "both") {
             BYID("use_as_both").checked = true
-            BYID("server_options").style.display = "block"
+            handleMainRadio("use_as_both")
+        } else {
+            BYID("use_as_client").checked = true
+            handleMainRadio("use_as_client")
+        }
+
+        if (config.client.client_protocal === "ws") {
+            BYID("client_protocal_ws").checked = true
+        } else {
+            BYID("client_protocal_wss").checked = true
         }
 
         if (config.server.server_ip === "127.0.0.1") {

@@ -2,18 +2,140 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src * ; script-src 'self'">
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=2.0" />
     <link rel='stylesheet' type='text/css' href='assets/index.css' />
     <title>LedgerSmart</title>
 </head>
 <body>
-    <div id="side_panel">
+    <div id="top_panel">
+        <div  class="app_menus_cont">
+            <div class="app_menu" id="app_menu_file" title="Menu">
+                <u>M</u>enu <hr>
+                <li class="app_menu_item" id="app_menu_file_load" >Change Data Store</li>
+                <li class="app_menu_item" id="app_menu_file_new" >New Data Store</li>
+                <u>W</u>indow<br>
+                <li class="app_menu_item" id="app_menu_window_reload" >Reload</li>
+                <li class="app_menu_item" id="app_menu_window_devtool" >Open DevTools</li>
+                <li class="app_menu_item" id="app_menu_window_new" >New Window</li>
+                <li class="app_menu_item" id="app_menu_window_close" >Close</li>
+            </div>
 
+        </div>
+        <span id="tagline">LedgerSmart</span>
+        <div class="window_btns_cont">
+            <div class="window_btn" id="win_minimize" title="Minimize">/</div>
+            <div class="window_btn" id="win_maximize" title="Maximize">O</div>
+            <div class="window_btn" id="win_close" title="Close">X</div>
+        </div>
+    </div>
+    <div id="side_panel">
+        <div class="main_menu_btn" id="main_btn_overview">
+            Overview
+        </div>
+        <div class="main_menu_btn" id="main_btn_addedit">
+            Transaction
+        </div>
+        <div class="main_menu_btn" id="main_btn_reports">
+            Reports
+        </div>
+        <div class="main_menu_btn" id="main_btn_settings">
+            Settings
+        </div>
+        <div class="" id="view_tabs_list_cont">
+            <div class="view_tab_btn" id="tab_btn_tabid1">
+                tab_btn_tabid1
+            </div>
+            <div class="view_tab_btn" id="tab_btn_tabid2">
+                tab_btn_tabid2
+            </div>
+        </div>
     </div>
     <div id="workarea">
+        <div class="worktab" id="main_tab_overview">
+            <div class="worktab_top_panel">
+                <h2>Overview | </h2>
+            </div>
+            <div class="worktab_view" id="wt_view_overview_main">
+                main overview tab
+            </div>
+        </div>
+        <div class="worktab" id="main_tab_addedit">
+            <div class="worktab_top_panel">
+                <h2>Transaction | </h2>
+            </div>
+            <div class="worktab_view" id="wt_view_addedit_main">
+                main Transaction tab
+            </div>
+        </div>
+        <div class="worktab" id="main_tab_reports">
+            <div class="worktab_top_panel">
+                <h2>Reports | </h2>
+            </div>
+            <div class="worktab_view" id="wt_view_reports_main">
+                main reports tab
+                acct balance over time<br>
+            </div>
 
+
+        </div>
+        <div class="worktab" id="main_tab_settings">
+            <div class="worktab_top_panel">
+                <h2>Settings | </h2>
+                <div class="worktab_top_panel_btn" id="wt_btn_settings_data"> Data </div>
+                <div class="worktab_top_panel_btn" id="wt_btn_settings_theme"> Theme </div>
+            </div>
+            <div class="worktab_view" id="wt_view_settings_data">
+                Data Store Settings | Active Store: <span id="data_store_active_display"></span>
+                <div class="item_card" id="">
+                    Change Active Data Store<hr>
+                    <span id="data_store_selector_warning"></span>
+                    <select class="" id="data_store_selector">
+
+                    </select>
+                    <button type="button" id="data_store_change_button">Change</button>
+                </div>
+                <div class="item_card" id="">
+                    Create New Data Store<hr>
+                    <input type="text" id="data_store_new_name" placeholder="NewDataStoreName" value="">
+                    <button type="button" id="data_store_new_create_button">Create</button>
+                </div>
+            </div>
+            <div class="worktab_view" id="wt_view_settings_theme">
+                <h4>Backgrounds</h4>
+                color_picker_mainbg1<input class="color_picker_input" id="color_picker_mainbg1" type="color" name="" value="#e9e2e2"><br>
+                color_picker_altbg1<input class="color_picker_input" id="color_picker_altbg1" type="color" name="" value="#0b0e3c"><br>
+                color_picker_altbg2<input class="color_picker_input" id="color_picker_altbg2" type="color" name="" value="#461306"><br>
+
+                <hr>
+                <h4>Text color</h4>
+                color_picker_maintxt1<input class="color_picker_input" id="color_picker_maintxt1" type="color" name="" value="#020622"><br>
+                color_picker_alttxt1<input class="color_picker_input" id="color_picker_alttxt1" type="color" name="" value="#97c3a2"><br>
+                color_picker_alttxt2<input class="color_picker_input" id="color_picker_alttxt2" type="color" name="" value="#FFFFFF"><br>
+
+            </div>
+
+        </div>
+        <div class="worktab" id="work_tab_tabid1">
+            work_tab_tabid1
+        </div>
+        <div class="worktab" id="work_tab_tabid2">
+            work_tab_tabid2
+        </div>
+    </div>
+    <div id="modal_cont">
+        <div class="modal_tab" id="modal_try_connect">
+            trying to connect
+        </div>
+        <div class="modal_tab" id="modal_connect_lost">
+            <br><br>
+            <h2>Could not connect to server</h2>
+            Server IP : <input type="text" id="conn_lost_server_ip_input" value=""><br>
+            Server Port : <input type="number" id="conn_lost_server_port_input" value=""><br>
+            <input type="checkbox" id="save_conn_changes" > Save Changes <br>
+            <h3 id="reconnect_btn"> Retry Connection </h3>
+        </div>
     </div>
 
 
@@ -26,6 +148,8 @@
 
     <script src="./js/header.js"></script>
     <script src="./js/ipc.js"></script>
+    <script src="./js/views.js"></script>
+    <script src="./js/settings.js"></script>
     <script src="./js/startup.js"></script>
 </body>
 </html>

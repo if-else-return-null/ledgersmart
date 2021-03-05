@@ -20,6 +20,7 @@ let config = {
         theme:"default",
         client_port: 25444,
         client_ip: "127.0.0.1",
+        client_protocal: "ws",
         app_data_path: null
     },
     server:{
@@ -51,7 +52,7 @@ config.client.app_data_path = app_data_path
 if ( !fs.existsSync( app_data_path ) ) {
     console.log("CREATE: user data folder", app_data_path);
     fs.mkdirSync( app_data_path + "data", { recursive: true } )
-    //fs.mkdirSync( app_data_path, {  } )
+    fs.mkdirSync( app_data_path + "user", { recursive: true } )
     saveConfig()
 
 } else {
@@ -326,6 +327,7 @@ function createWindow () {
         y:0,
         width: 1024,
         height: 768,
+        frame: false,
         webPreferences: {
             contextIsolation: false,
             preload: path.join(__dirname, 'preload.js')
@@ -337,6 +339,10 @@ function createWindow () {
     clients[id].loadFile('./index.html')
     // Open the DevTools.
     clients[id].webContents.openDevTools()
+    clients[id].webContents.on('context-menu', function(event,params){
+        console.log("client contextmenu",event,params);
+    })
+
 }
 
 
@@ -348,5 +354,29 @@ function startClientOnly(mode) {
 ipcMain.on("client_window", (event, data) => {
     let clientID = event.sender.browserWindowOptions.ls_client_id
     console.log("Message from client window id:",clientID);
-    //clients[clientID].webContents.send('from_mainProcess', {type:"just a reply"})
+    if (data.type === "request_current_config") {
+        clients[clientID].webContents.send('from_mainProcess', {type:"config_update" , config:config  })
+
+    }
+    if (data.type === "window_button") {
+        //clients[clientID].
+        if (data.button === "win_minimize"){
+            if ( clients[clientID].isMinimized() ){
+                clients[clientID].restore()
+            } else {
+                clients[clientID].minimize()
+            }
+        }
+        if (data.button === "win_maximize"){
+            if ( clients[clientID].isMaximized()){
+                clients[clientID].unmaximize()
+            } else {
+                clients[clientID].maximize()
+            }
+        }
+        if (data.button === "win_close"){
+            clients[clientID].close()
+        }
+
+    }
 })

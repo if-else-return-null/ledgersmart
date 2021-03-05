@@ -33,6 +33,7 @@ function getConfigInfoCli() {
     if ( !fs.existsSync( app_data_path ) ) {
         console.log("LS: CREATE: user data folder", app_data_path);
         fs.mkdirSync( app_data_path + "data", { recursive: true } )
+        fs.mkdirSync( app_data_path + "user", { recursive: true } )
         saveConfig()
 
     } else {
@@ -51,8 +52,21 @@ function getConfigInfoCli() {
 
 }
 
-let LSDATA = {}
-let LsDataStoreList = []
+let LSDATA = {
+    /*
+    storeid: {
+        info:{
+            name:"storename",
+
+        },
+        dates:{
+
+        }
+    }
+    */
+}
+let LsDataStoreNameList = []
+let LsDataStoreIdList = []
 function loadDataStores() {
     console.log("LS: Begin loading data stores");
     let path = lsconfig.app_data_path + "data"
@@ -73,9 +87,29 @@ function loadDataStores() {
                     let dateid = datelist[i].replace(".json", "")
                     LSDATA[storeid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + storeid + "/dates/" + datelist[i] ,'utf8') )
                 }
-                LsDataStoreList.push(LSDATA[storeid].info.name)
+                LsDataStoreNameList.push(LSDATA[storeid].info.name)
+                LsDataStoreIdList.push(storeid)
             }
         }
     }
     console.log("LS: Finished loading data stores");
+}
+
+//--------------------------------user accounts--------------------------------
+let LSUSER = {
+
+}
+
+let found_root_user = false // if this stays false then this is probobly a new server
+function loadUsers() {
+    console.log("LS: Begin loading user accounts");
+    let path = lsconfig.app_data_path + "user"
+    let filelist =  fs.readdirSync( path , { })
+    for (var i = 0; i < filelist.length; i++) {
+        if ( filelist[i].endsWith(".json") ){
+            let userid = filelist[i].replace(".json","")
+            LSDATA[userid] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
+            if (LSDATA[userid].isRoot === true) { found_root_user = true }
+        }
+    }
 }

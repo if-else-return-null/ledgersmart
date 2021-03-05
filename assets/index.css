@@ -1,24 +1,16 @@
-/*
-<?php
-header("Content-type: text/css; charset: UTF-8");
 
-$mainbg ="#004669"; #  brown #755019 - maroon #690000 - pale green #696900
-$logboxbg ="#4D7E96"; #  light brown #B89470       brown #755019  maroon #690000      #004669   #4D7E96  #99B5C3
-$alt1bg ="#3973ac";
-
-$maintxt = "#339933"; # green #339933
-$alt1txt = "#006699"; # pale blue #006699
-$alt2txt = "#FFFFFF"; #
-
-
-?>
-*/
 :root {
-  --mainbg: #004669;
-  --alt1txt: #006699;
-  --alt2txt: #FFFFFF;
-  --alt1bg: #3973ac;
-   --alt2bg: #3468ac;
+  --mainbg1: #e9e2e2;
+  --altbg1: #0b0e3c;
+  --altbg2: #461306;
+  --altbg3: rgba(0,0,0,.75);
+  --maintxt1: #020622;
+  --alttxt1: #97c3a2;
+  --alttxt2: #FFFFFF;
+  --top_panel_height: 30px;
+  --side_panel_width: 20%;
+  --workarea_width: 80%;
+  --worktab_top_panel_height: 30px;
 }
 
 
@@ -26,12 +18,17 @@ html {
 /*height: 80%;*/
 }
 
-body { height:100%; width: 100%; overflow: hidden; background:var(--mainbg); font-family: Consolas, monospace;}
+body {
+    height:100%; width: 100%; overflow: hidden; background:none;
+    font-family: Consolas, monospace;
+}
 
 
 a:link,a:visited,a:hover,a:active { color: #006699; text-decoration:none; }
 
 input[type=submit] {    border-radius:5px;  }
+
+h2 { margin: 0; }
 
 .fltrt {float: right;}
 .fltlft { float: left;}
@@ -41,7 +38,66 @@ input[type=submit] {    border-radius:5px;  }
 .medtext { font-size:150%;}
 .redtxt {color:red;}
 
-#side_panel { position: absolute; width: 20%; height: 100%; top: 0px; left: 0px; overflow:auto; background: var(--alt1bg); }
-#workarea {position: absolute; width: 80%; height: 100%; top: 0px; left: 20%; overflow:auto; background: var(--alt2bg); }
+#top_panel {
+    position: absolute; width: 100%; height:var(--top_panel_height); top: 0px; left: 0px;
+    overflow:auto; background: var(--altbg2); color: var(--alttxt2); user-select: none;
+    text-align: center; overflow: visible; z-index: 10; -webkit-app-region: drag;
+}
+.window_btns_cont { position: absolute; top:0; right:0; -webkit-app-region: no-drag; }
+.window_btn { border:1px solid black; margin:2px; padding:2px; display: inline-block; cursor: pointer;}
+.window_btns_cont .window_btn:hover {  background: var(--altbg1); color: var(--alttxt1); }
 
-.worktab { width: 100%; min-height: 100%; background: var(--mainbg); }
+.app_menus_cont { position: absolute; top:0; left:0;  -webkit-app-region: no-drag;}
+.app_menu {
+    height:var(--top_panel_height); width:150px; display: inline-block; cursor: pointer;
+    line-height: var(--top_panel_height); overflow: hidden;
+    vertical-align: text-top;
+}
+.app_menu li {list-style: none; font-size: 75%; text-align: left;}
+.app_menu li:hover {background: white; color: black;}
+.app_menu_active { background: green; height:auto; }
+
+#side_panel {
+    position: absolute; width: var(--side_panel_width); height: calc( 100% - var(--top_panel_height) );
+    top: var(--top_panel_height); left: 0px; user-select: none;
+    overflow:auto; background: var(--altbg1); color: var(--alttxt1);
+}
+.button_active { background: var(--altbg2); color: var(--alttxt2);}
+.main_menu_btn { border:1px solid black; margin:3px;}
+.view_tab_btn {border:1px solid black; margin:3px; }
+
+#workarea {
+    position: absolute; width:var(--workarea_width); height: calc( 100% - var(--top_panel_height) );
+    top: var(--top_panel_height); left: var(--side_panel_width); margin: 0; padding:0;
+    overflow:none; background: var(--mainbg1); color: var(--maintxt1);
+}
+
+.worktab { display: none; width: 100%; height: 100%; overflow:none; margin: 0; padding:0; }
+
+.worktab_top_panel {
+    width:100%; height:var(--worktab_top_panel_height) ; background: var(--altbg1);
+    color: var(--alttxt1); user-select: none;
+}
+.worktab_top_panel h2 { display: inline-block; margin-left: 10px; margin-right: 20px;}
+.worktab_top_panel_btn {
+    border:1px solid var(--alttxt1); margin:2px; padding:3px; display: inline-block;
+    cursor: pointer;
+}
+.worktab_top_panel .worktab_top_panel_btn:hover {  background: var(--altbg2); color: var(--alttxt2); }
+.worktab_view {
+    width:100%; height: calc(100% - var(--worktab_top_panel_height) ); overflow:auto;
+    display:none;
+}
+
+#modal_cont {
+    position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;
+    overflow:auto; background: var(--altbg3); color:var(--alttxt2); z-index: 100;
+    display: none;
+}
+
+.modal_tab { display: none; width: 100%; min-height: 100%; text-align: center;}
+
+
+
+
+/*  */

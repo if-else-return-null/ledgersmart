@@ -6,3 +6,81 @@ function generateUUIDv4() {
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   );
 }
+
+let conn = null
+let config = {}
+let STATE = {}
+STATE.active_tab_info = { btn_id:"main_btn_overview", tab_id:"main_tab_overview" }
+STATE.conn_error = false
+STATE.appmenu = {}
+//------------------------ws server connection---------------------------------
+function tryConnect() {
+    showModal("modal_try_connect")
+    try {
+        conn = new WebSocket(config.client.client_protocal + "://"+config.client.client_ip+":"+config.client.client_port+"/");
+        conn.errorOccured = false
+        conn.onopen = function(event) {
+            console.log("Websocket conn is open now.");
+            STATE.conn_error = false
+            setTimeout(hideModal,1000)
+            // we need to get user login now
+            showUserLoginScreen()
+            // send auth request
+            //sendInitRequestToServer()
+        };
+
+        conn.onmessage = function (event) {
+            let data = JSON.parse(event.data)
+            console.log("Websocket incoming message.", data);
+            handleIncomingMessage(data)
+
+        };
+
+        conn.onerror = function(event) {
+            console.log("Websocket conn error observed:");
+            conn.errorOccured = true
+            console.log(event);
+
+        };
+
+        conn.onclose = function(event) {
+            console.log("Websocket conn is closed now.", event);
+            if (conn.errorOccured === true) {
+                STATE.conn_error = true
+            }
+            // reset conn
+            conn = null;
+            handleConnectLost()
+
+        };
+
+
+
+    } catch (e) {
+        console.log( "could not connect to websocket");
+    } finally {
+
+    }
+}
+
+
+function handleConnectLost() {
+    //*** we may need to reset some things here as we progress
+    if (STATE.conn_error === true ) {
+        //** maybe show a notice of this
+    }
+    BYID("conn_lost_server_ip_input").value = config.client.client_ip
+    BYID("conn_lost_server_port_input").value = config.client.client_port
+
+
+    setTimeout(function (){ showModal("modal_connect_lost"); },1000)
+
+}
+
+function sendInitRequestToServer(){
+    let datastore = null
+    if (localStorage.getItem("datastore_id")) {
+        datastore = localStorage.getItem("datastore_id")
+    }
+    conn.send( JSON.stringify({type:"client_init", datastore_id:datastore }) )
+}

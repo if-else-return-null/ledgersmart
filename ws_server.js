@@ -411,6 +411,7 @@ function getConfigInfoCli() {
     if ( !fs.existsSync( app_data_path ) ) {
         console.log("LS: CREATE: user data folder", app_data_path);
         fs.mkdirSync( app_data_path + "data", { recursive: true } )
+        fs.mkdirSync( app_data_path + "user", { recursive: true } )
         saveConfig()
 
     } else {
@@ -429,8 +430,21 @@ function getConfigInfoCli() {
 
 }
 
-let LSDATA = {}
-let LsDataStoreList = []
+let LSDATA = {
+    /*
+    storeid: {
+        info:{
+            name:"storename",
+
+        },
+        dates:{
+
+        }
+    }
+    */
+}
+let LsDataStoreNameList = []
+let LsDataStoreIdList = []
 function loadDataStores() {
     console.log("LS: Begin loading data stores");
     let path = lsconfig.app_data_path + "data"
@@ -451,11 +465,31 @@ function loadDataStores() {
                     let dateid = datelist[i].replace(".json", "")
                     LSDATA[storeid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + storeid + "/dates/" + datelist[i] ,'utf8') )
                 }
-                LsDataStoreList.push(LSDATA[storeid].info.name)
+                LsDataStoreNameList.push(LSDATA[storeid].info.name)
+                LsDataStoreIdList.push(storeid)
             }
         }
     }
     console.log("LS: Finished loading data stores");
+}
+
+//--------------------------------user accounts--------------------------------
+let LSUSER = {
+
+}
+
+let found_root_user = false // if this stays false then this is probobly a new server
+function loadUsers() {
+    console.log("LS: Begin loading user accounts");
+    let path = lsconfig.app_data_path + "user"
+    let filelist =  fs.readdirSync( path , { })
+    for (var i = 0; i < filelist.length; i++) {
+        if ( filelist[i].endsWith(".json") ){
+            let userid = filelist[i].replace(".json","")
+            LSDATA[userid] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
+            if (LSDATA[userid].isRoot === true) { found_root_user = true }
+        }
+    }
 }
 
 // from this point you would define the all the logic, functions, data, etc that is
@@ -479,7 +513,12 @@ handle.wsServerClose = function (){
 
 
 handle.wsClientMessage = function (client_id, packet){
+    packet.client_id = client_id
     console.log(`WS: Message from client_id ${ client_id }`, packet );
+    if (packet.type && packet.type === "client_init") {
+        clientInit(packet)
+        return
+    }
 }
 
 handle.wsClientClose = function (client_id){
@@ -491,19 +530,17 @@ handle.wsClientError = function (client_id, err){
 }
 
 handle.clientAuthorize = function (client_id, packet) {
-    console.log("WS: Verify client auth");
-    // verify auth acording to your own logic
-    // this function must return a booleen and should probobly be syncronous
-    // simple example
-    let key = "someSecretKey"
-    if (packet.key && packet.key === key) {
+    packet.client_id = client_id
+    console.log("WS: client init");
+    // clients first message(auth) should be a client_init request
+    // *** eventually this may require some sort of actual authing
+    if (packet.type && packet.type === "client_init") {
+        clientInit(packet)
         return true
     } else {
         return false
     }
 
-    // to bypass auth just return true
-    //return true
 }
 
 
@@ -523,6 +560,17 @@ handle.parentMessage = function (msg){
         WS.stopServer()
     }
 }
+function clientInit(packet){
+    let client_id = packet.client_id
+    WS.clients[client_id].dsid = packet.datastore_id
+    packet.datastore_list = { name:LsDataStoreNameList, id:LsDataStoreIdList}
+    // if we have the requested data store set the client group to that store
+    if (LsDataStoreIdList.includes(packet.datastore_id)){
+        // attach init data to packet
+
+    }
+    WS.sendToClient(client_id, packet)
+}
 
 // setup config and data info for standalone server
 if (WS.is_subprocess === false) {
@@ -535,9 +583,10 @@ if (WS.is_subprocess === false) {
 
 handle.wsServerIsReady = function () {
     // do any other tasks for server startup
-    // get a list data stores
+    // load the data stores
     loadDataStores()
-        
+    // load user accounts
+    loadUsers()
     // let the parent know were ready for clients
     if (WS.is_subprocess){
         process.send({type:"websocket_ready"})

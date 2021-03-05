@@ -20,7 +20,12 @@ handle.wsServerClose = function (){
 
 
 handle.wsClientMessage = function (client_id, packet){
+    packet.client_id = client_id
     console.log(`WS: Message from client_id ${ client_id }`, packet );
+    if (packet.type && packet.type === "client_init") {
+        clientInit(packet)
+        return
+    }
 }
 
 handle.wsClientClose = function (client_id){
@@ -32,19 +37,17 @@ handle.wsClientError = function (client_id, err){
 }
 
 handle.clientAuthorize = function (client_id, packet) {
-    console.log("WS: Verify client auth");
-    // verify auth acording to your own logic
-    // this function must return a booleen and should probobly be syncronous
-    // simple example
-    let key = "someSecretKey"
-    if (packet.key && packet.key === key) {
+    packet.client_id = client_id
+    console.log("WS: client init");
+    // clients first message(auth) should be a client_init request
+    // *** eventually this may require some sort of actual authing
+    if (packet.type && packet.type === "client_init") {
+        clientInit(packet)
         return true
     } else {
         return false
     }
 
-    // to bypass auth just return true
-    //return true
 }
 
 

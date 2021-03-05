@@ -10,9 +10,10 @@ if (WS.is_subprocess === false) {
 
 handle.wsServerIsReady = function () {
     // do any other tasks for server startup
-    // get a list data stores
+    // load the data stores
     loadDataStores()
-        
+    // load user accounts
+    loadUsers()
     // let the parent know were ready for clients
     if (WS.is_subprocess){
         process.send({type:"websocket_ready"})
