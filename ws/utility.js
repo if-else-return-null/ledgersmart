@@ -1,7 +1,9 @@
 
 // declare the handle object
 let handle = {}
-
+let STATE = {}
+STATE.found_root_user = false // if this stays false then this is probobly a new server
+STATE.rootUsers = []
 // update help info for ledgersmart
 WS.help.cli_options["--config"] = "Specify a config file to use. Note that this will only override valid server config properties"
 
@@ -22,3 +24,8 @@ function getTimeNow(secs) {
 }
 
 function cloneOBJ(obj) { return JSON.parse(JSON.stringify(obj)) }
+
+let SAVE = {}
+SAVE.user = function(username){
+    //LSUSER[username]
+}

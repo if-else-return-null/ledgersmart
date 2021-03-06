@@ -10,23 +10,24 @@ function generateUUIDv4() {
 let conn = null
 let config = {}
 let STATE = {}
-STATE.active_tab_info = { btn_id:"main_btn_overview", tab_id:"main_tab_overview" }
+STATE.active_tab_info = { btn_id:"main_tab_btn_overview", tab_id:"main_tab_overview" }
 STATE.conn_error = false
 STATE.appmenu = {}
+STATE.user_tile_name = null
+STATE.text_based_login = true
+STATE.dsid = null
 //------------------------ws server connection---------------------------------
 function tryConnect() {
     showModal("modal_try_connect")
     try {
-        conn = new WebSocket(config.client.client_protocal + "://"+config.client.client_ip+":"+config.client.client_port+"/");
+        conn = new WebSocket(config.ls.client_protocal + "://"+config.ls.client_ip+":"+config.ls.client_port+"/");
         conn.errorOccured = false
         conn.onopen = function(event) {
             console.log("Websocket conn is open now.");
             STATE.conn_error = false
-            setTimeout(hideModal,1000)
             // we need to get user login now
             showUserLoginScreen()
-            // send auth request
-            //sendInitRequestToServer()
+
         };
 
         conn.onmessage = function (event) {
@@ -69,14 +70,15 @@ function handleConnectLost() {
     if (STATE.conn_error === true ) {
         //** maybe show a notice of this
     }
-    BYID("conn_lost_server_ip_input").value = config.client.client_ip
-    BYID("conn_lost_server_port_input").value = config.client.client_port
+    BYID("conn_lost_server_ip_input").value = config.ls.client_ip
+    BYID("conn_lost_server_port_input").value = config.ls.client_port
 
 
     setTimeout(function (){ showModal("modal_connect_lost"); },1000)
 
 }
 
+//**** maybe do this with login
 function sendInitRequestToServer(){
     let datastore = null
     if (localStorage.getItem("datastore_id")) {

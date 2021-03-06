@@ -322,12 +322,13 @@ WS.startServer = function () {
             }
 
         })
+        handle.wsNewClientConnect(ws.client_id)
     })
 
     // the server is ready for clients
     handle.wsServerIsReady()
 
-    
+
 
 }
 
@@ -355,7 +356,9 @@ WS.sendToAllClients = function (packet, checkAuth = true) {
 
 // declare the handle object
 let handle = {}
-
+let STATE = {}
+STATE.found_root_user = false // if this stays false then this is probobly a new server
+STATE.rootUsers = []
 // update help info for ledgersmart
 WS.help.cli_options["--config"] = "Specify a config file to use. Note that this will only override valid server config properties"
 
@@ -377,19 +380,25 @@ function getTimeNow(secs) {
 
 function cloneOBJ(obj) { return JSON.parse(JSON.stringify(obj)) }
 
-// this is a mirror of config.client in main.js
+let SAVE = {}
+SAVE.user = function(username){
+    //LSUSER[username]
+}
+
+// this is a mirror of config.ls in main.js
 let lsconfig = {
     appmode:"ask",
     theme:"default",
     client_port: 25444,
     client_ip: "127.0.0.1",
-    app_data_path: null
+    app_data_path: null,
+    broadcast_users: true
 }
 
 function saveConfig() {
     let config = {}
     config.server = WS.config
-    config.client = lsconfig
+    config.ls = lsconfig
     fs.writeFileSync(lsconfig.app_data_path + "config.json", JSON.stringify(config,null,4) ) //
 }
 
@@ -419,7 +428,7 @@ function getConfigInfoCli() {
             console.log('LOAD: config.json.');
             let config = JSON.parse( fs.readFileSync(app_data_path + "config.json",'utf8') )
             WS.config = config.server
-            lsconfig = config.client
+            lsconfig = config.ls
         } else {
             saveConfig()
         }
@@ -432,7 +441,7 @@ function getConfigInfoCli() {
 
 let LSDATA = {
     /*
-    storeid: {
+    dsid: {
         info:{
             name:"storename",
 
@@ -443,8 +452,9 @@ let LSDATA = {
     }
     */
 }
-let LsDataStoreNameList = []
-let LsDataStoreIdList = []
+
+let LsDataStoreList = { name:[], id:[] }
+
 function loadDataStores() {
     console.log("LS: Begin loading data stores");
     let path = lsconfig.app_data_path + "data"
@@ -452,21 +462,21 @@ function loadDataStores() {
     for (var i = 0; i < filelist.length; i++) {
         //console.log(filelist[i]);
         if (filelist[i].isDirectory()) {
-            let storeid = filelist[i].name
-            if ( fs.existsSync( path + "/" + storeid + "/store.json" )  ){
+            let dsid = filelist[i].name
+            if ( fs.existsSync( path + "/" + dsid + "/store.json" )  ){
                 console.log("found a ledgersmart data store folder");
-                LSDATA[storeid] = {
-                    info: JSON.parse( fs.readFileSync(path + "/" + storeid + "/store.json",'utf8') ),
+                LSDATA[dsid] = {
+                    info: JSON.parse( fs.readFileSync(path + "/" + dsid + "/store.json",'utf8') ),
                     dates:{}
                 }
                 // load in all the date files
-                let datelist =  fs.readdirSync( path + "/" + storeid + "/dates" , {})
+                let datelist =  fs.readdirSync( path + "/" + dsid + "/dates" , {})
                 for (var i = 0; i < datelist.length; i++) {
                     let dateid = datelist[i].replace(".json", "")
-                    LSDATA[storeid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + storeid + "/dates/" + datelist[i] ,'utf8') )
+                    LSDATA[dsid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + dsid + "/dates/" + datelist[i] ,'utf8') )
                 }
-                LsDataStoreNameList.push(LSDATA[storeid].info.name)
-                LsDataStoreIdList.push(storeid)
+                LsDataStoreList.name.push(LSDATA[dsid].info.name)
+                LsDataStoreList.id.push(dsid)
             }
         }
     }
@@ -477,19 +487,25 @@ function loadDataStores() {
 let LSUSER = {
 
 }
+let LsUserList = []
 
-let found_root_user = false // if this stays false then this is probobly a new server
 function loadUsers() {
     console.log("LS: Begin loading user accounts");
     let path = lsconfig.app_data_path + "user"
     let filelist =  fs.readdirSync( path , { })
     for (var i = 0; i < filelist.length; i++) {
         if ( filelist[i].endsWith(".json") ){
-            let userid = filelist[i].replace(".json","")
-            LSDATA[userid] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
-            if (LSDATA[userid].isRoot === true) { found_root_user = true }
+            let username = filelist[i].replace(".json","")
+            LSDATA[username] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
+            if (LSDATA[username].isRoot === true) {
+                STATE.found_root_user = true
+                STATE.rootUsers.push(username)
+            }
+            // add to lists
+            LsUserList.push(username)
         }
     }
+    console.log("LS: Finished loading user accounts");
 }
 
 // from this point you would define the all the logic, functions, data, etc that is
@@ -512,15 +528,6 @@ handle.wsServerClose = function (){
 }
 
 
-handle.wsClientMessage = function (client_id, packet){
-    packet.client_id = client_id
-    console.log(`WS: Message from client_id ${ client_id }`, packet );
-    if (packet.type && packet.type === "client_init") {
-        clientInit(packet)
-        return
-    }
-}
-
 handle.wsClientClose = function (client_id){
     console.log(`WS: Client disconnected: id ${ client_id } `);
 }
@@ -529,19 +536,82 @@ handle.wsClientError = function (client_id, err){
     console.log(`WS: Client id ${ client_id } error`, err);
 }
 
+handle.wsNewClientConnect = function(client_id) {
+    console.log(`WS: New client connected: id ${ client_id } `);
+    if (lsconfig.broadcast_users === true) {
+        //*** send user list
+        WS.sendToClient(client_id, {type:"userlist_update", list:LsUserList })
+    }
+}
+
+
 handle.clientAuthorize = function (client_id, packet) {
     packet.client_id = client_id
     console.log("WS: client init");
     // clients first message(auth) should be a client_init request
     // *** eventually this may require some sort of actual authing
-    if (packet.type && packet.type === "client_init") {
-        clientInit(packet)
-        return true
-    } else {
+    if (packet.type && packet.type === "user_login") {
+        // check login info
+        let loginok = checkUserLogin(packet)
+        if (loginok){
+            packet.success = true
+            // initiate the client
+            clientInit(packet)
+            return true
+        } else {
+            packet.success = false
+            WS.sendToClient(client_id, packet)
+            return false
+        }
+
+    }
+    else if (packet.type && packet.type === "user_create") {
+        let createok = createUserAccount(packet)
+        if (createok){
+            packet.success = true
+            //** add any other info to the packet here
+            WS.sendToClient(client_id, packet)
+            return true
+        } else {
+            return false
+        }
+
+    }
+    else {
         return false
     }
 
 }
+
+
+
+handle.wsClientMessage = function (client_id, packet){
+    packet.client_id = client_id
+    console.log(`WS: Message from client_id ${ client_id }`, packet );
+    /*
+    // *** probobly don't need this now
+    if (packet.type && packet.type === "client_init") {
+        clientInit(packet)
+        return
+    }
+    */
+    if (packet.type && packet.type === "user_login") {
+        // check login info
+        let loginok = checkUserLogin(packet)
+        if (loginok){
+            packet.success = true
+            // initiate the client
+            clientInit(packet)
+            return true
+        } else {
+            packet.success = false
+            WS.sendToClient(client_id, packet)
+            return false
+        }
+
+    }
+}
+
 
 
 // setup any other messaging here
@@ -553,23 +623,102 @@ handle.parentMessage = function (msg){
             WS.config[item] = msg.config[item]
         }
         // set ledgersmarts config
-        lsconfig = msg.client
+        lsconfig = msg.lsconfig
         WS.startServer()
     }
     if (msg.type === "shutdown_server") {
         WS.stopServer()
     }
 }
+//------------------------clients--------------------------------------------
+
 function clientInit(packet){
     let client_id = packet.client_id
-    WS.clients[client_id].dsid = packet.datastore_id
-    packet.datastore_list = { name:LsDataStoreNameList, id:LsDataStoreIdList}
-    // if we have the requested data store set the client group to that store
-    if (LsDataStoreIdList.includes(packet.datastore_id)){
-        // attach init data to packet
-
+    let username = packet.username
+    packet.type = "client_init"
+    WS.clients[client_id].dsid = LSUSER[username].lastUsedDataStore
+    packet.dsid = LSUSER[username].lastUsedDataStore
+    packet.datastore_list = { name:[], id:[] }
+    if ( LSUSER[username].isRoot === true){
+        packet.datastore_list = LsDataStoreList
+    } else {
+        for (let dsid in LSUSER[username].perm){
+            packet.datastore_list.id.push(dsid)
+            packet.datastore_list.name.push(LSDATA[dsid].name)
+        }
     }
+
+    // if we have the last used data store set the client group to that store
+    if (packet.dsid !== null){
+        // check that this data store exists
+        if ( !LsDataStoreList.id.includes(packet.dsid)) {
+            packet.dsid = null
+            WS.clients[client_id].dsid = null
+        }
+        // check that non-root users have permission on this data store
+        if ( LSUSER[username].isRoot === false && !packet.datastore_list.id.includes(packet.dsid)  ) {
+            packet.dsid = null
+            WS.clients[client_id].dsid = null
+        }
+    }
+
     WS.sendToClient(client_id, packet)
+}
+
+
+
+//---------------------users--------------------------------------------------
+function createUserAccount(packet) {
+    // check if username already exists
+    let client_id = packet.client_id
+    let username = packet.username.toLowerCase()
+    if (LsUserList.includes(username)){
+        // username already exists
+        packet.success = false
+        packet.reason = "Username already exists"
+        WS.sendToClient(client_id, packet)
+        return false
+    }
+    // setup new user object
+    let userinfo = {
+        displayName: packet.username,
+        id:username,
+        username:username,
+        password:packet.password,
+        isRoot:false,
+        perm:{},
+        lastUsedDataStore:null
+    }
+    // check if this is the servers first user
+    if (STATE.found_root_user === false){
+        userinfo.isRoot = true
+        STATE.rootUsers.push(username)
+        STATE.found_root_user = true
+    }
+    LSUSER[username] = cloneOBJ(userinfo)
+    LsUserList.push(username)
+
+    // save the user data
+    SAVE.user(username)
+    return true
+}
+
+
+function checkUserLogin(packet){
+    let username = packet.username.toLowerCase()
+    let password = packet.password
+    // check for valid user
+    if (!LsUserList.includes(username)) {
+        return false
+    }
+    if (password !== LSUSER[username].password) {
+        return false
+    }
+    // good user and pass
+    return true
+
+
+
 }
 
 // setup config and data info for standalone server

@@ -1,17 +1,18 @@
 
-// this is a mirror of config.client in main.js
+// this is a mirror of config.ls in main.js
 let lsconfig = {
     appmode:"ask",
     theme:"default",
     client_port: 25444,
     client_ip: "127.0.0.1",
-    app_data_path: null
+    app_data_path: null,
+    broadcast_users: true
 }
 
 function saveConfig() {
     let config = {}
     config.server = WS.config
-    config.client = lsconfig
+    config.ls = lsconfig
     fs.writeFileSync(lsconfig.app_data_path + "config.json", JSON.stringify(config,null,4) ) //
 }
 
@@ -41,7 +42,7 @@ function getConfigInfoCli() {
             console.log('LOAD: config.json.');
             let config = JSON.parse( fs.readFileSync(app_data_path + "config.json",'utf8') )
             WS.config = config.server
-            lsconfig = config.client
+            lsconfig = config.ls
         } else {
             saveConfig()
         }
@@ -54,7 +55,7 @@ function getConfigInfoCli() {
 
 let LSDATA = {
     /*
-    storeid: {
+    dsid: {
         info:{
             name:"storename",
 
@@ -65,8 +66,9 @@ let LSDATA = {
     }
     */
 }
-let LsDataStoreNameList = []
-let LsDataStoreIdList = []
+
+let LsDataStoreList = { name:[], id:[] }
+
 function loadDataStores() {
     console.log("LS: Begin loading data stores");
     let path = lsconfig.app_data_path + "data"
@@ -74,21 +76,21 @@ function loadDataStores() {
     for (var i = 0; i < filelist.length; i++) {
         //console.log(filelist[i]);
         if (filelist[i].isDirectory()) {
-            let storeid = filelist[i].name
-            if ( fs.existsSync( path + "/" + storeid + "/store.json" )  ){
+            let dsid = filelist[i].name
+            if ( fs.existsSync( path + "/" + dsid + "/store.json" )  ){
                 console.log("found a ledgersmart data store folder");
-                LSDATA[storeid] = {
-                    info: JSON.parse( fs.readFileSync(path + "/" + storeid + "/store.json",'utf8') ),
+                LSDATA[dsid] = {
+                    info: JSON.parse( fs.readFileSync(path + "/" + dsid + "/store.json",'utf8') ),
                     dates:{}
                 }
                 // load in all the date files
-                let datelist =  fs.readdirSync( path + "/" + storeid + "/dates" , {})
+                let datelist =  fs.readdirSync( path + "/" + dsid + "/dates" , {})
                 for (var i = 0; i < datelist.length; i++) {
                     let dateid = datelist[i].replace(".json", "")
-                    LSDATA[storeid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + storeid + "/dates/" + datelist[i] ,'utf8') )
+                    LSDATA[dsid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + dsid + "/dates/" + datelist[i] ,'utf8') )
                 }
-                LsDataStoreNameList.push(LSDATA[storeid].info.name)
-                LsDataStoreIdList.push(storeid)
+                LsDataStoreList.name.push(LSDATA[dsid].info.name)
+                LsDataStoreList.id.push(dsid)
             }
         }
     }
@@ -99,17 +101,23 @@ function loadDataStores() {
 let LSUSER = {
 
 }
+let LsUserList = []
 
-let found_root_user = false // if this stays false then this is probobly a new server
 function loadUsers() {
     console.log("LS: Begin loading user accounts");
     let path = lsconfig.app_data_path + "user"
     let filelist =  fs.readdirSync( path , { })
     for (var i = 0; i < filelist.length; i++) {
         if ( filelist[i].endsWith(".json") ){
-            let userid = filelist[i].replace(".json","")
-            LSDATA[userid] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
-            if (LSDATA[userid].isRoot === true) { found_root_user = true }
+            let username = filelist[i].replace(".json","")
+            LSDATA[username] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
+            if (LSDATA[username].isRoot === true) {
+                STATE.found_root_user = true
+                STATE.rootUsers.push(username)
+            }
+            // add to lists
+            LsUserList.push(username)
         }
     }
+    console.log("LS: Finished loading user accounts");
 }

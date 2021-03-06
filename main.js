@@ -15,13 +15,14 @@ const user = process.env.USER
 const os_platform = process.platform
 let app_data_path
 let config = {
-    client:{
+    ls:{
         appmode:"ask", // ask, client , both
         theme:"default",
         client_port: 25444,
         client_ip: "127.0.0.1",
         client_protocal: "ws",
-        app_data_path: null
+        app_data_path: null,
+        broadcast_users: true
     },
     server:{
         server_port: 25444,
@@ -46,7 +47,7 @@ else {
 }
 app_data_path += "/.ledgersmart/"
 
-config.client.app_data_path = app_data_path
+config.ls.app_data_path = app_data_path
 
 
 if ( !fs.existsSync( app_data_path ) ) {
@@ -93,7 +94,7 @@ function checkArgs(cmdargs = args) {
     // default to the mode specified in config
     if (optionSet === false){
         console.log("starting normal by config setting");
-        startAppInMode(config.client.appmode)
+        startAppInMode(config.ls.appmode)
     }
 
 
@@ -220,7 +221,7 @@ function toUnicode(theString) {
 
 
 function checkOkToQuit() {
-    if (config.client.appmode === "both" && ws_server !== null) {
+    if (config.ls.appmode === "both" && ws_server !== null) {
         ws_server.send({type:"shutdown_server"})
         return
     }
@@ -292,7 +293,7 @@ function startWebSocketServer(mode) {
     ws_server.on('message', (msg) => {
         console.log('Message from ws_server', msg);
         if (msg.type === "request_config") {
-            ws_server.send({type:"config_info", config:config.server, client:config.client})
+            ws_server.send({type:"config_info", config:config.server, lsconfig:config.ls})
         }
         if (msg.type === "websocket_ready") {
             if (mode === "both") {

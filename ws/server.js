@@ -190,12 +190,13 @@ WS.startServer = function () {
             }
 
         })
+        handle.wsNewClientConnect(ws.client_id)
     })
 
     // the server is ready for clients
     handle.wsServerIsReady()
 
-    
+
 
 }
 

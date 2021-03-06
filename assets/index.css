@@ -10,7 +10,7 @@
   --top_panel_height: 30px;
   --side_panel_width: 20%;
   --workarea_width: 80%;
-  --worktab_top_panel_height: 30px;
+  --maintab_top_panel_height: 30px;
 }
 
 
@@ -63,7 +63,7 @@ h2 { margin: 0; }
     overflow:auto; background: var(--altbg1); color: var(--alttxt1);
 }
 .button_active { background: var(--altbg2); color: var(--alttxt2);}
-.main_menu_btn { border:1px solid black; margin:3px;}
+.main_tab_btn { border:1px solid black; margin:3px;}
 .view_tab_btn {border:1px solid black; margin:3px; }
 
 #workarea {
@@ -74,30 +74,60 @@ h2 { margin: 0; }
 
 .worktab { display: none; width: 100%; height: 100%; overflow:none; margin: 0; padding:0; }
 
-.worktab_top_panel {
-    width:100%; height:var(--worktab_top_panel_height) ; background: var(--altbg1);
+.maintab_top_panel {
+    width:100%; height:var(--maintab_top_panel_height) ; background: var(--altbg1);
     color: var(--alttxt1); user-select: none;
 }
-.worktab_top_panel h2 { display: inline-block; margin-left: 10px; margin-right: 20px;}
-.worktab_top_panel_btn {
+.maintab_top_panel h2 { display: inline-block; margin-left: 10px; margin-right: 20px;}
+.maintab_top_panel_btn {
     border:1px solid var(--alttxt1); margin:2px; padding:3px; display: inline-block;
     cursor: pointer;
 }
-.worktab_top_panel .worktab_top_panel_btn:hover {  background: var(--altbg2); color: var(--alttxt2); }
+.maintab_top_panel .maintab_top_panel_btn:hover {  background: var(--altbg2); color: var(--alttxt2); }
 .worktab_view {
-    width:100%; height: calc(100% - var(--worktab_top_panel_height) ); overflow:auto;
+    width:100%; height: calc(100% - var(--maintab_top_panel_height) ); overflow:auto;
     display:none;
 }
 
 #modal_cont {
-    position: absolute; width: 100%; height: 100%; top: 0px; left: 0px;
-    overflow:auto; background: var(--altbg3); color:var(--alttxt2); z-index: 100;
+    position: absolute; width: 100%; height: calc( 100% - var(--top_panel_height) );
+    top: var(--top_panel_height); left: 0px; overflow:auto;
+    background: var(--altbg3); color:var(--alttxt2); z-index: 100;
     display: none;
 }
 
 .modal_tab { display: none; width: 100%; min-height: 100%; text-align: center;}
 
+/*modal user_login*/
+#modal_user_login {}
+#modal_user_login_loading {
+    position: absolute; top: 0; left: 0; width: 100%; height:100%; display: none;
+    background: var(--altbg3); z-index: 200; text-align: center; vertical-align: middle;
+}
+#login_user_create {
+    width:45%; margin-right: 2%; display: inline-block; vertical-align: text-top;
+    border-right: 1px solid white;
+}
+#login_user_info {
+    width:45%; margin-left: 2%; display: inline-block; vertical-align: text-top;
+}
 
+#login_user_list_password_area  {
+    width: 80%; height:125px; overflow-x: auto; overflow-y: none; background: blue;
+    margin:50px; display: none;
+}
 
-
+#login_user_list {
+    width: 80%; height:125px; overflow-x: auto; overflow-y: none; background: blue;
+    margin:50px; display: none;
+}
+#login_user_list div {
+    position: relative; display: inline-block; width:100px; height:100px;
+    border:1px solid var(--alttxt1);
+}
+#login_user_list div .clicksurface {
+    position: absolute; top: 0; left: 0; width:100%; height:100%; z-index: 125; background: none;
+}
+#login_user_pass_repeat_area { display: none; }
+#login_user_list_password_area { display: none; }
 /*  */

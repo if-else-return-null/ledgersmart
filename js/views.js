@@ -1,3 +1,5 @@
+
+//---------------------------worktab controls----------------------------------
 function showMainWorkarea(event) {
     let btn_id, tab_id
     if (typeof(event) === "string") {
@@ -6,7 +8,7 @@ function showMainWorkarea(event) {
         btn_id = event.target.id
     }
     console.log("click", event.target.id);
-    tab_id = btn_id.replace("main_btn_", "main_tab_")
+    tab_id = btn_id.replace("main_tab_btn_", "main_tab_")
     switchTabs(btn_id, tab_id)
 
 }
@@ -18,10 +20,10 @@ function showTabWorkarea(event) {
     } else {
         btn_id = event.target.id
     }
-    console.log("click", event.target.id);
+    console.log("click", btn_id);
 
     if (btn_id === "view_tabs_list_cont") { return; }
-    tab_id = btn_id.replace("tab_btn_", "work_tab_")
+    tab_id = btn_id.replace("view_tab_btn_", "view_tab_")
     switchTabs(btn_id, tab_id)
 }
 
@@ -34,7 +36,7 @@ function switchTabs(btn_id, tab_id) {
     BYID(STATE.active_tab_info.tab_id).style.display = "block"
 }
 
-
+//--------------------------------modal control--------------------------------
 function showModal(modal_id) {
     let elems = document.getElementsByClassName("modal_tab");
     for (var i = 0; i < elems.length; i++) {
@@ -62,7 +64,7 @@ function handleWindowButton(event) {
     lsapi.send("client_window",{type:"window_button", button:btn_id})
 }
 
-//----------------------------app menus--------------------------------------
+//----------------------------app menu--------------------------------------
 
 function toggleAppMenu(event) {
     let valid_ids = ["app_menu_file","app_menu_window"]
@@ -117,52 +119,10 @@ function clickAppMenuItem(event) {
 
 
 
-//-------------------------THEME----------------------------------------------
-function updateThemeColor(event, value = null) {
-    let css_id
-    if (typeof(event) === "string") {
-        css_id = event
-    } else {
-        css_id = event.target.id
-    }
-    console.log("input", css_id);
-    if (value === null){
-         value = BYID(css_id).value
-    }
 
-    css_id = "--" + css_id.replace("color_picker_", "")
-
-    root.style.setProperty(css_id, value);
-}
-
-//------------------------worktab top panel------------------------------------
-function workTabActions(info) {
-    function clearViews(tabname){ // hide all of this worktabs views
-        let views = BYID("main_tab_"+tabname).getElementsByClassName("worktab_view");
-        for (var i = 0; i < views.length; i++) {
-            views[i].style.display = "none"
-        }
-    }
-
-    if (info[0] === "settings"){
-        clearViews(info[0])
-        BYID("wt_view_"+info[0]+"_"+info[1]).style.display = "block"
-    }
-    if (info[0] === "overview"){
-        clearViews(info[0])
-        BYID("wt_view_"+info[0]+"_"+info[1]).style.display = "block"
-    }
-    if (info[0] === "addedit"){
-        clearViews(info[0])
-        BYID("wt_view_"+info[0]+"_"+info[1]).style.display = "block"
-    }
-    if (info[0] === "reports"){
-        clearViews(info[0])
-        BYID("wt_view_"+info[0]+"_"+info[1]).style.display = "block"
-    }
-}
-
-
+//------------------------main tab top panel------------------------------------
+// this is for divs with id=main_tabs_* only.
+//*** divs with id=view_tab_* will eventually have a similar interface
 function clickWorkTabButton(event) {
     let item_id
     if (typeof(event) === "string") {
@@ -171,8 +131,35 @@ function clickWorkTabButton(event) {
         item_id = event.target.id
     }
 
-    let info = item_id.replace("wt_btn_", "").split("_")
-    console.log("worktab_top_panel_btn click", info);
+    let info = item_id.replace("mt_btn_", "").split("_")
+    console.log("maintab_top_panel_btn click", info);
     workTabActions(info)
 
+}
+
+//
+function workTabActions(info) {
+    function clearViews(tabname){ // hide all of this worktabs views
+        let views = BYID("main_tab_"+tabname).getElementsByClassName("worktab_view");
+        for (var i = 0; i < views.length; i++) {
+            views[i].style.display = "none"
+        }
+    }
+    //*** the actions below will likely change as the code progresses
+    if (info[0] === "settings"){
+        clearViews(info[0])
+        BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
+    }
+    if (info[0] === "overview"){
+        clearViews(info[0])
+        BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
+    }
+    if (info[0] === "addedit"){
+        clearViews(info[0])
+        BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
+    }
+    if (info[0] === "reports"){
+        clearViews(info[0])
+        BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
+    }
 }
