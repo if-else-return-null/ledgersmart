@@ -2,8 +2,10 @@
 
 function clientInit(packet){
     let client_id = packet.client_id
-    let username = packet.username
+    let username = packet.username.toLowerCase()
     packet.type = "client_init"
+    WS.clients[client_id].username = username
+    WS.clients[client_id].isRoot = LSUSER[username].isRoot
     WS.clients[client_id].dsid = LSUSER[username].lastUsedDataStore
     packet.dsid = LSUSER[username].lastUsedDataStore
     packet.datastore_list = { name:[], id:[] }
@@ -29,6 +31,7 @@ function clientInit(packet){
             WS.clients[client_id].dsid = null
         }
     }
+    if (packet.dsid !== null){ packet.storeinfo = LSDATA[dsid].info }
 
     WS.sendToClient(client_id, packet)
 }
@@ -75,6 +78,7 @@ function createUserAccount(packet) {
 function checkUserLogin(packet){
     let username = packet.username.toLowerCase()
     let password = packet.password
+    console.log("checking user login ", username, password);
     // check for valid user
     if (!LsUserList.includes(username)) {
         return false

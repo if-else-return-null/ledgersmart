@@ -326,8 +326,8 @@ function createWindow () {
         ls_client_id:id,
         x:0,
         y:0,
-        width: 1024,
-        height: 768,
+        width: 1600,
+        height: 900,
         frame: false,
         webPreferences: {
             contextIsolation: false,
@@ -378,6 +378,13 @@ ipcMain.on("client_window", (event, data) => {
         if (data.button === "win_close"){
             clients[clientID].close()
         }
+        if (data.button === "win_devtools"){
+            clients[clientID].webContents.openDevTools()
+        }
+
+    }
+    if (data.type === "request_new_window") {
+        console.log("New window requested from client:",clientID);
 
     }
 })

@@ -37,17 +37,23 @@ h2 { margin: 0; }
 .smtext { font-size:85%;}
 .medtext { font-size:150%;}
 .redtxt {color:red;}
-
+.input_warning {color:red; font-size:75%; }
+.item_card {
+    border:1px solid var(--alttxt1); border-radius: 3px; padding:10px;
+    margin:10px; display: inline-block;
+}
+.h_button { cursor: pointer; display: inline-block; padding: 10px;}
+.h_button:hover { text-decoration: underline; background: var(--altbg3);}
 #top_panel {
     position: absolute; width: 100%; height:var(--top_panel_height); top: 0px; left: 0px;
     overflow:auto; background: var(--altbg2); color: var(--alttxt2); user-select: none;
-    text-align: center; overflow: visible; z-index: 10; -webkit-app-region: drag;
+    text-align: left; overflow: visible; z-index: 10; -webkit-app-region: drag;
 }
 .window_btns_cont { position: absolute; top:0; right:0; -webkit-app-region: no-drag; }
 .window_btn { border:1px solid black; margin:2px; padding:2px; display: inline-block; cursor: pointer;}
 .window_btns_cont .window_btn:hover {  background: var(--altbg1); color: var(--alttxt1); }
 
-.app_menus_cont { position: absolute; top:0; left:0;  -webkit-app-region: no-drag;}
+.app_menus_cont { position: absolute; top:0; right:100px;  -webkit-app-region: no-drag;}
 .app_menu {
     height:var(--top_panel_height); width:150px; display: inline-block; cursor: pointer;
     line-height: var(--top_panel_height); overflow: hidden;
@@ -99,26 +105,27 @@ h2 { margin: 0; }
 .modal_tab { display: none; width: 100%; min-height: 100%; text-align: center;}
 
 /*modal user_login*/
-#modal_user_login {}
+#modal_user_login {background: var(--altbg1)}
 #modal_user_login_loading {
     position: absolute; top: 0; left: 0; width: 100%; height:100%; display: none;
     background: var(--altbg3); z-index: 200; text-align: center; vertical-align: middle;
 }
 #login_user_create {
     width:45%; margin-right: 2%; display: inline-block; vertical-align: text-top;
-    border-right: 1px solid white;
+
 }
 #login_user_info {
     width:45%; margin-left: 2%; display: inline-block; vertical-align: text-top;
+
 }
 
 #login_user_list_password_area  {
-    width: 80%; height:125px; overflow-x: auto; overflow-y: none; background: blue;
-    margin:50px; display: none;
+    width: 80%; height:100px; overflow-x: auto; overflow-y: none; background: none;
+    display: none;
 }
 
 #login_user_list {
-    width: 80%; height:125px; overflow-x: auto; overflow-y: none; background: blue;
+    width: 80%; height:125px; overflow-x: auto; overflow-y: none; background: none;
     margin:50px; display: none;
 }
 #login_user_list div {
@@ -129,5 +136,10 @@ h2 { margin: 0; }
     position: absolute; top: 0; left: 0; width:100%; height:100%; z-index: 125; background: none;
 }
 #login_user_pass_repeat_area { display: none; }
-#login_user_list_password_area { display: none; }
+
+#login_user_remember {
+    position: absolute; bottom: 0; left: 0; width:100%; height:auto; z-index: 125; background: red;
+}
+
+
 /*  */

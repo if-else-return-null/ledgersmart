@@ -13,13 +13,18 @@
         <div  class="app_menus_cont">
             <div class="app_menu" id="app_menu_file" title="Menu">
                 <u>M</u>enu <hr>
+
+                <u>Window</u><br>
+                <li class="app_menu_item" id="app_menu_window_new" >New Window</li>
+                <li class="app_menu_item" id="app_menu_window_logout" >Log Out</li>
+                <li class="app_menu_item" id="app_menu_window_close" >Close</li>
+                <u>Tools</u><br>
                 <li class="app_menu_item" id="app_menu_file_load" >Change Data Store</li>
                 <li class="app_menu_item" id="app_menu_file_new" >New Data Store</li>
-                <u>W</u>indow<br>
-                <li class="app_menu_item" id="app_menu_window_reload" >Reload</li>
                 <li class="app_menu_item" id="app_menu_window_devtool" >Open DevTools</li>
-                <li class="app_menu_item" id="app_menu_window_new" >New Window</li>
-                <li class="app_menu_item" id="app_menu_window_close" >Close</li>
+                <li class="app_menu_item" id="app_menu_app_reload" >Reload App</li>
+
+
             </div>
 
         </div>
@@ -84,35 +89,59 @@
             <div class="maintab_top_panel">
                 <h2>Settings | </h2>
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_data"> Data </div>
+                <div class="maintab_top_panel_btn" id="mt_btn_settings_user"> User </div>
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_theme"> Theme </div>
             </div>
             <div class="worktab_view" id="mt_view_settings_data">
                 Data Store Settings | Active Store: <span id="data_store_active_display"></span>
+                <hr>
                 <div class="item_card" id="">
                     Change Active Data Store<hr>
-                    <span id="data_store_selector_warning"></span>
+                    <span class="input_warning" id="data_store_selector_warning"></span>
                     <select class="" id="data_store_selector">
 
                     </select>
-                    <button type="button" id="data_store_change_button">Change</button>
+                    <h4 class="h_button" id="data_store_change_button">Change</h4>
+
                 </div>
                 <div class="item_card" id="">
                     Create New Data Store<hr>
+                    <span class="input_warning" id="data_store_new_name_warning">&nbsp;</span><br>
                     <input type="text" id="data_store_new_name" placeholder="NewDataStoreName" value="">
-                    <button type="button" id="data_store_new_create_button">Create</button>
+                    <h4 class="h_button" id="data_store_new_create_button">Create</h4>
+
                 </div>
+                <hr>
+                SERVER<br>
+                <button type="button" id="toggle_server_broadcast_user_btn">Toggle broadcast users</button><br>
+                <input type="text" id="debug_request_input" value="">
+                <button type="button" id="debug_get_info_btn">Log debug object</button><br> 
+            </div>
+            <div class="class="worktab_view" id="mt_view_settings_user"">
+                <div class="item_card" id="">
+                    <input class="remember_checkbox" type="checkbox" id="settings_user_remember_user" value=""> Remember User <br>
+                    <input class="remember_checkbox" type="checkbox" id="settings_user_remember_password" value=""> Remember Password
+
+                </div>
+
             </div>
             <div class="worktab_view" id="mt_view_settings_theme">
-                <h4>Backgrounds</h4>
-                color_picker_mainbg1<input class="color_picker_input" id="color_picker_mainbg1" type="color" name="" value="#e9e2e2"><br>
-                color_picker_altbg1<input class="color_picker_input" id="color_picker_altbg1" type="color" name="" value="#0b0e3c"><br>
-                color_picker_altbg2<input class="color_picker_input" id="color_picker_altbg2" type="color" name="" value="#461306"><br>
+                Theme Settings<hr>
+                <div class="item_card">
+                    <h4>Backgrounds</h4>
+                    color_picker_mainbg1<input class="color_picker_input" id="color_picker_mainbg1" type="color" name="" value="#e9e2e2"><br>
+                    color_picker_altbg1<input class="color_picker_input" id="color_picker_altbg1" type="color" name="" value="#0b0e3c"><br>
+                    color_picker_altbg2<input class="color_picker_input" id="color_picker_altbg2" type="color" name="" value="#461306"><br>
 
-                <hr>
-                <h4>Text color</h4>
-                color_picker_maintxt1<input class="color_picker_input" id="color_picker_maintxt1" type="color" name="" value="#020622"><br>
-                color_picker_alttxt1<input class="color_picker_input" id="color_picker_alttxt1" type="color" name="" value="#97c3a2"><br>
-                color_picker_alttxt2<input class="color_picker_input" id="color_picker_alttxt2" type="color" name="" value="#FFFFFF"><br>
+                </div>
+                <div class="item_card">
+                    <h4>Text color</h4>
+                    color_picker_maintxt1<input class="color_picker_input" id="color_picker_maintxt1" type="color" name="" value="#020622"><br>
+                    color_picker_alttxt1<input class="color_picker_input" id="color_picker_alttxt1" type="color" name="" value="#97c3a2"><br>
+                    color_picker_alttxt2<input class="color_picker_input" id="color_picker_alttxt2" type="color" name="" value="#FFFFFF"><br>
+
+                </div>
+
 
             </div>
 
@@ -125,7 +154,7 @@
         </div>
     </div>
     <div id="modal_cont">
-        <div class="modal_tab" id="modal_try_connect">
+        <div class="modal_tab" id="modal_dynamic">
             trying to connect
         </div>
         <div class="modal_tab" id="modal_connect_lost">
@@ -134,7 +163,7 @@
             Server IP : <input type="text" id="conn_lost_server_ip_input" value=""><br>
             Server Port : <input type="number" id="conn_lost_server_port_input" value=""><br>
             <input type="checkbox" id="save_conn_changes" > Save Changes <br>
-            <h3 id="reconnect_btn"> Retry Connection </h3>
+            <h3 class="h_button" id="reconnect_btn"> Retry Connection </h3>
         </div>
         <div class="modal_tab" id="modal_user_login">
             <div id="modal_user_login_loading">
@@ -170,27 +199,34 @@
             </div>
             <div id="login_user_list_password_area">
                 Password <input type="password" id="login_user_list_password_input" value="">
-                <button type="button" id="login_user_list_attempt_btn">Login</button>
+                <h4 class="h_button" id="login_user_list_attempt_btn">Login</h4>
+
             </div>
             <div id="login_user_create">
-                <h3>Create User</h3>
+
                 <div id="login_user_create_infotext">
 
                 </div>
-                <button type="button" id="login_user_create_start_btn">Create</button>
+                <h3 class="h_button" id="login_user_create_start_btn" >Create User</h3>
             </div>
             <div id="login_user_info">
                 <h3 id="login_user_info_heading">Login</h3>
                 Name <input type="text" id="login_user_info_name" value=""><br>
-                Password <input type="text" id="login_user_info_pass" value=""><br>
+                Password <input type="password" id="login_user_info_pass" value=""><br>
                 <span id="login_user_pass_repeat_area">
-                    Repeat <input type="text" id="login_user_info_pass_repeat" value=""><br>
-                    <button type="button" id="login_user_create_attempt_btn">Create</button>
+                    Repeat <input type="password" id="login_user_info_pass_repeat" value=""><br>
+                    <h4 class="h_button" id="login_user_create_attempt_btn">Create</h4>
+                    &nbsp;&nbsp;&nbsp;
+                    <h4 class="h_button" id="login_user_create_cancel_btn">Cancel</h4>
                 </span>
                 <span id="login_user_text_btn_area">
-                    <button type="button" id="login_user_text_attempt_btn">Login</button>
+                    <h4 class="h_button" id="login_user_text_attempt_btn">Login</h4>
                 </span>
 
+            </div>
+            <div id="login_user_remember">
+                <input class="remember_checkbox" type="checkbox" id="login_user_remember_user" value=""> Remember User |
+                <input class="remember_checkbox" type="checkbox" id="login_user_remember_password" value=""> Remember Password
             </div>
         </div>
     </div>

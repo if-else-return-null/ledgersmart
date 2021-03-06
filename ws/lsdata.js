@@ -52,7 +52,7 @@ function getConfigInfoCli() {
     return true
 
 }
-
+//------------------------Data Stores----------------------------------------
 let LSDATA = {
     /*
     dsid: {
@@ -96,6 +96,11 @@ function loadDataStores() {
     }
     console.log("LS: Finished loading data stores");
 }
+
+function createNewDataStore(){
+    
+}
+
 
 //--------------------------------user accounts--------------------------------
 let LSUSER = {

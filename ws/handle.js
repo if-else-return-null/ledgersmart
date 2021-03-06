@@ -101,6 +101,21 @@ handle.wsClientMessage = function (client_id, packet){
         }
 
     }
+
+    if (packet.type && packet.type === "toggle_broadcast_users") {
+        if (WS.clients[client_id].isRoot){
+            lsconfig.broadcast_users = !lsconfig.broadcast_users
+            console.log("LS broadcast users = ", lsconfig.broadcast_users );
+            saveConfig()
+        }
+        return
+    }
+
+    if (packet.type && packet.type === "debug_info") {
+        if (WS.clients[client_id].isRoot) {
+            debugGetItem(packet)
+        }
+    }
 }
 
 

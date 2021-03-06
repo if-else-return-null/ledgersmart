@@ -29,3 +29,16 @@ let SAVE = {}
 SAVE.user = function(username){
     //LSUSER[username]
 }
+
+
+function debugGetItem(packet) {
+    let matrix = {
+        lsdata:LSDATA,
+        datastorelist:LsDataStoreList,
+        lsuser:LSUSER,
+        userlist:LsUserList,
+        config: { config:WS.config, lsconfig:lsconfig}
+    }
+    packet.item = matrix[packet.name]
+    WS.sendToClient(packet.client_id, packet)
+}

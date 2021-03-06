@@ -37,10 +37,13 @@ function switchTabs(btn_id, tab_id) {
 }
 
 //--------------------------------modal control--------------------------------
-function showModal(modal_id) {
+function showModal(modal_id, html = null) {
     let elems = document.getElementsByClassName("modal_tab");
     for (var i = 0; i < elems.length; i++) {
         elems[i].style.display = "none"
+    }
+    if (html !== null){
+        BYID(modal_id).innerHTML = html
     }
     BYID(modal_id).style.display = "block"
     BYID('modal_cont').style.display = "block"
@@ -108,12 +111,34 @@ function clickAppMenuItem(event) {
     }
 
     console.log("appmenuitem click", item_id);
-    if (item_id === "app_menu_file_load") {
+    // window
+    if (item_id === "app_menu_window_new" ){
+        //*** eventually this should include a method to auto log into current user
+        // maybe through the use of a localStorage item
 
+        lsapi.send("client_window",{type:"request_new_window"})
     }
-    if (item_id === "app_menu_file_load") {
 
+    if (item_id === "app_menu_window_logout" ){
+        
+        window.location.reload()
     }
+    if (item_id === "app_menu_window_close" ){
+        lsapi.send("client_window",{type:"window_button", button:"win_close"})
+    }
+    // tools
+    if (item_id === "app_menu_file_load" || item_id === "app_menu_file_new") {
+        switchTabs("main_tab_btn_settings", "main_tab_settings")
+        clickWorkTabButton("mt_btn_settings_data")
+    }
+    if (item_id === "app_menu_window_devtool" ){
+        lsapi.send("client_window",{type:"window_button", button:"win_devtools"})
+    }
+    if (item_id === "app_menu_app_reload" ){
+        window.location.reload()
+    }
+
+    closeAppMenu("app_menu_file")
 
 }
 
@@ -161,5 +186,28 @@ function workTabActions(info) {
     if (info[0] === "reports"){
         clearViews(info[0])
         BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
+    }
+}
+
+//---------------------misc controls--------------------------------------
+function checkInputEnterKey(event) {
+    if(event.key === 'Enter') {
+        console.log("enter key pressed", event.target.id);
+        if (event.target.id === "login_user_list_password_input"){
+            requestAttemptLogin("login_user_list_attempt_btn")
+        }
+        else if (event.target.id === "login_user_info_pass"){
+            if (STATE.create_user_visible === false) {
+                requestAttemptLogin("login_user_text_attempt_btn")
+            }
+
+        }
+        else if (event.target.id === "login_user_info_pass_repeat") {
+            requestCreateUser()
+        }
+        else {
+            // do nothing
+        }
+
     }
 }

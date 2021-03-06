@@ -13,20 +13,34 @@ let STATE = {}
 STATE.active_tab_info = { btn_id:"main_tab_btn_overview", tab_id:"main_tab_overview" }
 STATE.conn_error = false
 STATE.appmenu = {}
-STATE.user_tile_name = null
+//STATE.user_tile_name = null
 STATE.text_based_login = true
+STATE.datastore_list = { name:[], id:[] }
+STATE.create_user_visible = false
+STATE.user = null
+STATE.password = null
 STATE.dsid = null
+STATE.autologin = false
+STATE.last_user = null
+STATE.remember = { user:false, password:false }
+
 //------------------------ws server connection---------------------------------
 function tryConnect() {
-    showModal("modal_try_connect")
+    showModal("modal_dynamic", "<h2>Connecting to server</h2>")
     try {
         conn = new WebSocket(config.ls.client_protocal + "://"+config.ls.client_ip+":"+config.ls.client_port+"/");
         conn.errorOccured = false
         conn.onopen = function(event) {
             console.log("Websocket conn is open now.");
             STATE.conn_error = false
-            // we need to get user login now
-            showUserLoginScreen()
+            // check local storage for any autologin data
+            if (STATE.autologin === true){
+                requestAttemptLogin()
+            } else {
+                // we need to get user login now
+                setTimeout(showUserLoginScreen,1000)
+                //showUserLoginScreen()
+            }
 
         };
 
@@ -78,7 +92,7 @@ function handleConnectLost() {
 
 }
 
-//**** maybe do this with login
+//**** maybe do this with login ***NOT IN USE
 function sendInitRequestToServer(){
     let datastore = null
     if (localStorage.getItem("datastore_id")) {

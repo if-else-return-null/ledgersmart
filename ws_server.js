@@ -385,6 +385,19 @@ SAVE.user = function(username){
     //LSUSER[username]
 }
 
+
+function debugGetItem(packet) {
+    let matrix = {
+        lsdata:LSDATA,
+        datastorelist:LsDataStoreList,
+        lsuser:LSUSER,
+        userlist:LsUserList,
+        config: { config:WS.config, lsconfig:lsconfig}
+    }
+    packet.item = matrix[packet.name]
+    WS.sendToClient(packet.client_id, packet)
+}
+
 // this is a mirror of config.ls in main.js
 let lsconfig = {
     appmode:"ask",
@@ -438,7 +451,7 @@ function getConfigInfoCli() {
     return true
 
 }
-
+//------------------------Data Stores----------------------------------------
 let LSDATA = {
     /*
     dsid: {
@@ -482,6 +495,11 @@ function loadDataStores() {
     }
     console.log("LS: Finished loading data stores");
 }
+
+function createNewDataStore(){
+    
+}
+
 
 //--------------------------------user accounts--------------------------------
 let LSUSER = {
@@ -610,6 +628,21 @@ handle.wsClientMessage = function (client_id, packet){
         }
 
     }
+
+    if (packet.type && packet.type === "toggle_broadcast_users") {
+        if (WS.clients[client_id].isRoot){
+            lsconfig.broadcast_users = !lsconfig.broadcast_users
+            console.log("LS broadcast users = ", lsconfig.broadcast_users );
+            saveConfig()
+        }
+        return
+    }
+
+    if (packet.type && packet.type === "debug_info") {
+        if (WS.clients[client_id].isRoot) {
+            debugGetItem(packet)
+        }
+    }
 }
 
 
@@ -634,8 +667,10 @@ handle.parentMessage = function (msg){
 
 function clientInit(packet){
     let client_id = packet.client_id
-    let username = packet.username
+    let username = packet.username.toLowerCase()
     packet.type = "client_init"
+    WS.clients[client_id].username = username
+    WS.clients[client_id].isRoot = LSUSER[username].isRoot
     WS.clients[client_id].dsid = LSUSER[username].lastUsedDataStore
     packet.dsid = LSUSER[username].lastUsedDataStore
     packet.datastore_list = { name:[], id:[] }
@@ -661,6 +696,7 @@ function clientInit(packet){
             WS.clients[client_id].dsid = null
         }
     }
+    if (packet.dsid !== null){ packet.storeinfo = LSDATA[dsid].info }
 
     WS.sendToClient(client_id, packet)
 }
@@ -707,6 +743,7 @@ function createUserAccount(packet) {
 function checkUserLogin(packet){
     let username = packet.username.toLowerCase()
     let password = packet.password
+    console.log("checking user login ", username, password);
     // check for valid user
     if (!LsUserList.includes(username)) {
         return false
