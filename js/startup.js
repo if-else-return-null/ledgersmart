@@ -83,6 +83,11 @@ BYID("login_user_info_pass").addEventListener("change", handlePasswordInputChang
 BYID("data_store_new_create_button").addEventListener('click', requestCreateDataStore )
 BYID("data_store_change_button").addEventListener('click', changeActiveDataStore )
 
+
+let list_edit_buttons = document.getElementsByClassName("list_edit_button");
+for (var i = 0; i < list_edit_buttons.length; i++) {
+    list_edit_buttons[i].addEventListener("click", clickListEditButton);
+}
 BYID("toggle_server_broadcast_user_btn").addEventListener('click', toggleServerBroadcastUsers )
 BYID("debug_get_info_btn").addEventListener('click', requestDebugInfo )
 

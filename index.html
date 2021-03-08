@@ -91,6 +91,7 @@
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_data"> Data </div>
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_user"> User </div>
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_theme"> Theme </div>
+                <div class="maintab_top_panel_btn" id="mt_btn_settings_server"> Server </div>
             </div>
             <div class="worktab_view" id="mt_view_settings_data">
                 Data Store Settings | Active Store: <span id="data_store_active_display"></span>
@@ -112,12 +113,65 @@
 
                 </div>
                 <hr>
-                SERVER<br>
-                <button type="button" id="toggle_server_broadcast_user_btn">Toggle broadcast users</button><br>
-                <input type="text" id="debug_request_input" value="">
-                <button type="button" id="debug_get_info_btn">Log debug object</button><br>
+                <div class="item_card item_card_full" id="">
+                    Department<hr>
+                    <span class="input_warning" id="data_store_new_department_warning">&nbsp;</span><br>
+                    <input type="text" id="data_store_new_department_name" placeholder="New Department Name" value=""><br>
+
+                    <h4 class="h_button" id="data_store_new_department_create_button">Create</h4>
+
+                    <div class="data_items_list_edit" id="data_store_department_list_edit">
+                        <h4 class="h_button list_edit_button" id="data_store_list_edit_button_department">List/Edit</h4>
+                        <div class="list_edit_table_area">
+                            Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>
+                        </div>
+                    </div>
+                </div>
+                <div class="item_card item_card_full" id="">
+                    Account<hr>
+                    <span class="input_warning" id="data_store_new_account_warning">&nbsp;</span><br>
+                    <input type="text" id="data_store_new_account_name" placeholder="New Account Name" value=""><br>
+                    <br>
+                    <input type="radio" name="data_store_new_account_type" value="0" checked >Liquid Asset</input> <span class="smtext">(Cash, Checking,Saving,IRA,Stocks)</span><br>
+                    <input type="radio" name="data_store_new_account_type" value="1">Liability</input> <span class="smtext">(Credit Cards, Mortgage, Loans)</span><br>
+                    <input type="radio" name="data_store_new_account_type" value="2">Fixed Asset</input> <span class="smtext">(Land, Building, Equipment, Vehicles)</span><br>
+                    <input type="radio" name="data_store_new_account_type" value="3">Inventory</input> <span class="smtext">(Items for sale or goods used to produce sale items)</span><br>
+                    <h4 class="h_button" id="data_store_new_account_create_button">Create</h4>
+
+                    <div class="data_items_list_edit" id="data_store_account_list_edit">
+                        <h4 class="h_button list_edit_button" id="data_store_list_edit_button_account">List/Edit</h4>
+                        <div class="list_edit_table_area">
+                            Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="item_card item_card_full" id="">
+                    Category<hr>
+                    <span class="input_warning" id="data_store_new_categoryt_warning">&nbsp;</span><br>
+                    <input type="text" id="data_store_new_category_name" placeholder="New Category Name" value=""><br>
+
+                    <br>
+
+                    <input type="radio" name="data_store_new_category_type" value="0" checked=true>Income</input> <span class="smtext">(Sales,Paychecks,Interest)</span> <br>
+                    <input type="radio" name="data_store_new_category_type" value="1">Expence</input> <span class="smtext">(Bills, Payments)</span> <br>
+                    <input type="radio" name="data_store_new_category_type" value="2">Transfer</input> <span class="smtext">(Funds Moved between Accounts)</span> <br>
+                    <input type="radio" name="data_store_new_category_type" value="3">N/A</input> <span class="smtext">(Excluded from all Profit and Loss)</span> <br>
+                    <h4 class="h_button" id="data_store_new_category_create_button">Create</h4>
+
+                    <div class="data_items_list_edit" id="data_store_category_list_edit">
+                        <h4 class="h_button list_edit_button" id="data_store_list_edit_button_category">List/Edit</h4>
+                        <div class="list_edit_table_area">
+                            Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>
+                        </div>
+                    </div>
+
+                </div>
+
+
+
             </div>
-            <div class="class="worktab_view" id="mt_view_settings_user"">
+            <div class="worktab_view" id="mt_view_settings_user">
                 <div class="item_card" id="">
                     <input class="remember_checkbox" type="checkbox" id="settings_user_remember_user" value=""> Remember User <br>
                     <input class="remember_checkbox" type="checkbox" id="settings_user_remember_password" value=""> Remember Password
@@ -141,6 +195,15 @@
                     color_picker_alttxt2<input class="color_picker_input" id="color_picker_alttxt2" type="color" name="" value="#FFFFFF"><br>
 
                 </div>
+
+
+            </div>
+            <div class="worktab_view" id="mt_view_settings_server">
+                Server Settings<hr>
+                SERVER<br>
+                <button type="button" id="toggle_server_broadcast_user_btn">Toggle broadcast users</button><br>
+                <input type="text" id="debug_request_input" value="">
+                <button type="button" id="debug_get_info_btn">Log debug object</button><br>
 
 
             </div>

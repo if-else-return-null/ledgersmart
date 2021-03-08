@@ -115,8 +115,8 @@ function clickAppMenuItem(event) {
     if (item_id === "app_menu_window_new" ){
         //*** eventually this should include a method to auto log into current user
         // maybe through the use of a localStorage item
-
-        lsapi.send("client_window",{type:"request_new_window"})
+        let loginfo = {user:STATE.user, password:STATE.password, dsid:STATE.dsid}
+        lsapi.send("client_window",{type:"request_new_window", autologin:loginfo })
     }
 
     if (item_id === "app_menu_window_logout" ){

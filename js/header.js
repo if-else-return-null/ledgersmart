@@ -22,7 +22,7 @@ STATE.dsid = null
 STATE.autologin = null
 STATE.last_user = {value:null}
 STATE.local_users = {list:[], info:{} }
-
+STATE.view = {}
 
 //------------------------ws server connection---------------------------------
 function tryConnect() {

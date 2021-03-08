@@ -29,7 +29,7 @@ handle.wsClientError = function (client_id, err){
 
 handle.wsNewClientConnect = function(client_id) {
     console.log(`WS: New client connected: id ${ client_id } `);
-    let packet = { type:"userlist_update", list:null }
+    let packet = { type:"initial_userlist_update", list:null }
     if (lsconfig.broadcast_users === true) {
         packet.list = LsUserList
     }

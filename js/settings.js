@@ -123,9 +123,33 @@ function changeActiveDataStore(){
     conn.send( JSON.stringify({type:"datastore_change", dsid:new_dsid }) )
 }
 
+console.log("queryselect", document.querySelector('input[name="data_store_new_account_type"]:checked').value);
+//
+
+function clickListEditButton(event) {
+    let item_id
+    if (typeof(event) === "string") {
+        item_id = event
+    } else {
+        item_id = event.target.id
+    }
+    //data_store_department_list_edit
+    let viewid = "data_store_" + item_id.split("_").pop() + "_list_edit"
+    console.log("clickListEditButton", viewid);
+    if (!STATE.view[viewid]) {STATE.view[viewid] = false}
+    if (STATE.view[viewid] === false) {
+        BYID(viewid).style.height = "auto"
+    } else {
+        BYID(viewid).style.height = "var(--list_edit_height)"
+    }
+    STATE.view[viewid] = !STATE.view[viewid]
+
+}
+
+
 //-------------------------------settings users--------------------------------
 
-//
+
 
 
 

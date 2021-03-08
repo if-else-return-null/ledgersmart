@@ -5,6 +5,7 @@ const fs = require('fs')
 const path = require('path')
 let args = process.argv
 
+let cloneObj = function(obj){ return JSON.parse(JSON.stringify(obj))}
 
 const gotTheLock = app.requestSingleInstanceLock()
 
@@ -360,9 +361,12 @@ function startClientOnly(mode) {
 ipcMain.on("client_window", (event, data) => {
     let clientID = event.sender.browserWindowOptions.ls_client_id
     console.log("Message from client window id:",clientID);
+    let responce = {}
     if (data.type === "request_current_config") {
-        clients[clientID].webContents.send('from_mainProcess', {type:"config_update" , config:config  })
-
+        responce.type = "config_update"
+        responce.config = config
+        if ( clients[clientID].autologin ) { responce.autologin = clients[clientID].autologin  }
+        clients[clientID].webContents.send('from_mainProcess', responce)
     }
     if (data.type === "window_button") {
         //clients[clientID].
@@ -395,6 +399,6 @@ ipcMain.on("client_window", (event, data) => {
         if ( data.autologin ) {
             client_autologin = data.autologin
         }
-        //createWindow()
+        createWindow()
     }
 })

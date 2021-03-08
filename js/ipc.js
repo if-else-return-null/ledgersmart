@@ -22,8 +22,8 @@ function handleFromMainProcess(data) {
 
 function handleIncomingMessage(data) {
     //console.log("from main process", data);
-    if (data.type === "userlist_update") {
-        console.log("userlist_update from server");
+    if (data.type === "initial_userlist_update") {
+        console.log("initial_userlist_update from server");
         // update the list of users from server
         updateUserList(data)
         // check local storage for any autologin data
@@ -36,6 +36,9 @@ function handleIncomingMessage(data) {
             showUserLoginScreen()
         }
 
+    }
+    if (data.type === "userlist_update") {
+        updateUserList(data)
     }
 
     if (data.type === "client_init") {//*** more here to do

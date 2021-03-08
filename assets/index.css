@@ -11,6 +11,7 @@
   --side_panel_width: 20%;
   --workarea_width: 80%;
   --maintab_top_panel_height: 30px;
+  --list_edit_height: 50px;
 }
 
 
@@ -40,8 +41,9 @@ h2 { margin: 0; }
 .input_warning {color:red; font-size:75%; }
 .item_card {
     border:1px solid var(--alttxt1); border-radius: 3px; padding:10px;
-    margin:10px; display: inline-block;
+    margin:10px; display: inline-table; 
 }
+.item_card_full { width: 90%; margin-left: 4%;}
 .h_button { cursor: pointer; display: inline-block; padding: 10px;}
 .h_button:hover { text-decoration: underline; background: var(--altbg3);}
 #top_panel {
@@ -142,4 +144,6 @@ h2 { margin: 0; }
 }
 
 
-/*  */
+/*Settings edit data store  */
+
+.data_items_list_edit { width:100%; height:var(--list_edit_height); overflow:hidden; text-align: center;}
