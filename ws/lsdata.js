@@ -73,32 +73,78 @@ function loadDataStores() {
     console.log("LS: Begin loading data stores");
     let path = lsconfig.app_data_path + "data"
     let filelist =  fs.readdirSync( path , { withFileTypes:true })
-    for (var i = 0; i < filelist.length; i++) {
+    //console.log("datastore dir",filelist);
+
+    for (let i = 0; i < filelist.length; i++) {
         //console.log(filelist[i]);
         if (filelist[i].isDirectory()) {
             let dsid = filelist[i].name
             if ( fs.existsSync( path + "/" + dsid + "/store.json" )  ){
                 console.log("found a ledgersmart data store folder");
+
                 LSDATA[dsid] = {
                     info: JSON.parse( fs.readFileSync(path + "/" + dsid + "/store.json",'utf8') ),
                     dates:{}
                 }
+
                 // load in all the date files
                 let datelist =  fs.readdirSync( path + "/" + dsid + "/dates" , {})
-                for (var i = 0; i < datelist.length; i++) {
-                    let dateid = datelist[i].replace(".json", "")
-                    LSDATA[dsid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + dsid + "/dates/" + datelist[i] ,'utf8') )
+                //console.log("date list",datelist);
+                for (let ii = 0; ii < datelist.length; ii++) {
+                    let dateid = datelist[ii].replace(".json", "")
+                    LSDATA[dsid].dates[dateid] = JSON.parse( fs.readFileSync(path + "/" + dsid + "/dates/" + datelist[ii] ,'utf8') )
                 }
                 LsDataStoreList.name.push(LSDATA[dsid].info.name)
                 LsDataStoreList.id.push(dsid)
             }
         }
     }
+
     console.log("LS: Finished loading data stores");
 }
 
-function createNewDataStore(){
-    
+function createDataStore(packet){
+    console.log("LS: Creating new datastore", packet);
+    let client_id = packet.client_id
+    let username = WS.clients[client_id].username
+    packet.username = username
+    let dsid = packet.uuid
+    let path = lsconfig.app_data_path + "data/"+ dsid + "/dates"
+    fs.mkdirSync( path, { recursive: true } )
+
+    let info = {
+        owner:username,
+        name:packet.name,
+        dsid:dsid,
+        accounts:{},
+        category:{},
+        department:{},
+        schedule:{}
+
+    }
+
+    path = path.replace("dates", "store.json")
+    fs.writeFileSync(path, JSON.stringify(info,null,4) ) //
+    LSDATA[dsid] = {
+        info:cloneOBJ(info),
+        dates:{}
+    }
+    LsDataStoreList.name.push(LSDATA[dsid].info.name)
+    LsDataStoreList.id.push(dsid)
+    // send list update to roots and other clients of user
+    let list_item = { type:"ds_list_update", subtype:"add", name:LSDATA[dsid].info.name, id:dsid }
+    WS.sendToOtherClientsOfUser(client_id, list_item)
+    WS.sendToAllOtherRoots(client_id, list_item)
+    // update clients user perm & active datastore
+    LSUSER[username].perm[dsid] = {}
+    LSUSER[username].lastUsedDataStore = dsid
+    //WS.clients[client_id].dsid
+    SAVE.user(username)
+
+    // we should probobly just do client_init now so the new
+    // datastore can be set in the client
+    clientInit(packet)
+
 }
 
 

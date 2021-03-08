@@ -118,15 +118,15 @@ h2 { margin: 0; }
     width:45%; margin-left: 2%; display: inline-block; vertical-align: text-top;
 
 }
-
+/*
 #login_user_list_password_area  {
     width: 80%; height:100px; overflow-x: auto; overflow-y: none; background: none;
     display: none;
 }
-
+*/
 #login_user_list {
     width: 80%; height:125px; overflow-x: auto; overflow-y: none; background: none;
-    margin:50px; display: none;
+    margin:50px;
 }
 #login_user_list div {
     position: relative; display: inline-block; width:100px; height:100px;

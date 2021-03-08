@@ -29,10 +29,11 @@ handle.wsClientError = function (client_id, err){
 
 handle.wsNewClientConnect = function(client_id) {
     console.log(`WS: New client connected: id ${ client_id } `);
+    let packet = { type:"userlist_update", list:null }
     if (lsconfig.broadcast_users === true) {
-        //*** send user list
-        WS.sendToClient(client_id, {type:"userlist_update", list:LsUserList })
+        packet.list = LsUserList
     }
+    WS.sendToClient(client_id, packet)
 }
 
 
@@ -79,13 +80,7 @@ handle.clientAuthorize = function (client_id, packet) {
 handle.wsClientMessage = function (client_id, packet){
     packet.client_id = client_id
     console.log(`WS: Message from client_id ${ client_id }`, packet );
-    /*
-    // *** probobly don't need this now
-    if (packet.type && packet.type === "client_init") {
-        clientInit(packet)
-        return
-    }
-    */
+
     if (packet.type && packet.type === "user_login") {
         // check login info
         let loginok = checkUserLogin(packet)
@@ -115,6 +110,13 @@ handle.wsClientMessage = function (client_id, packet){
         if (WS.clients[client_id].isRoot) {
             debugGetItem(packet)
         }
+    }
+
+    if (packet.type && packet.type === "datastore_create") {
+        createDataStore(packet)
+    }
+    if (packet.type && packet.type === "datastore_change") {
+        changeDataStore(packet)
     }
 }
 

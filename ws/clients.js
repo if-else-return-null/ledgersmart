@@ -7,8 +7,19 @@ function clientInit(packet){
     WS.clients[client_id].username = username
     WS.clients[client_id].isRoot = LSUSER[username].isRoot
     WS.clients[client_id].dsid = LSUSER[username].lastUsedDataStore
+    //*** need to check for user requested dsid
+    if (packet.dsid && packet.dsid !== null){
+        if ( LSDATA[packet.dsid] ){
+            if ( LSUSER[username].isRoot === true || LSUSER[username].perm[packet.dsid] ){
+                WS.clients[client_id].dsid = packet.dsid
+                LSUSER[username].lastUsedDataStore = packet.dsid
+            }
+        }
+    }
+
     packet.dsid = LSUSER[username].lastUsedDataStore
     packet.datastore_list = { name:[], id:[] }
+    packet.storeinfo = null
     if ( LSUSER[username].isRoot === true){
         packet.datastore_list = LsDataStoreList
     } else {
@@ -18,22 +29,25 @@ function clientInit(packet){
         }
     }
 
-    // if we have the last used data store set the client group to that store
+    // if we have the last used data store set the client  to that store
     if (packet.dsid !== null){
         // check that this data store exists
         if ( !LsDataStoreList.id.includes(packet.dsid)) {
             packet.dsid = null
             WS.clients[client_id].dsid = null
+            LSUSER[username].lastUsedDataStore = null
         }
         // check that non-root users have permission on this data store
         if ( LSUSER[username].isRoot === false && !packet.datastore_list.id.includes(packet.dsid)  ) {
             packet.dsid = null
             WS.clients[client_id].dsid = null
+            LSUSER[username].lastUsedDataStore = null
         }
     }
-    if (packet.dsid !== null){ packet.storeinfo = LSDATA[dsid].info }
+    if (packet.dsid !== null){ packet.storeinfo = LSDATA[packet.dsid].info }
 
     WS.sendToClient(client_id, packet)
+    SAVE.user(username)
 }
 
 
@@ -90,5 +104,15 @@ function checkUserLogin(packet){
     return true
 
 
+
+}
+
+//------------ datastore
+
+function changeDataStore(packet) {
+    let client_id = packet.client_id
+    packet.username = WS.clients[client_id].username
+    console.log("LS: Change active data store ");
+    clientInit(packet)
 
 }

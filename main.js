@@ -318,6 +318,7 @@ function startWebSocketServer(mode) {
 
 
 let clientid = 0
+let client_autologin = null
 function createWindow () {
     // Create the browser window.
     let id = clientid
@@ -335,7 +336,10 @@ function createWindow () {
         },
         icon: path.join(__dirname, 'assets/icons/logo.png')
     })
-
+    if (client_autologin !== null) {
+        clients[id].autologin = cloneObj(client_autologin)
+        client_autologin = null
+    }
     // and load the index.html of the app.
     clients[id].loadFile('./index.html')
     // Open the DevTools.
@@ -343,6 +347,7 @@ function createWindow () {
     clients[id].webContents.on('context-menu', function(event,params){
         console.log("client contextmenu",event,params);
     })
+
 
 }
 
@@ -385,6 +390,11 @@ ipcMain.on("client_window", (event, data) => {
     }
     if (data.type === "request_new_window") {
         console.log("New window requested from client:",clientID);
-
+        // save login creds and dsid on window creation and send with config
+        // maybe just pass the packet back with the config responce
+        if ( data.autologin ) {
+            client_autologin = data.autologin
+        }
+        //createWindow()
     }
 })

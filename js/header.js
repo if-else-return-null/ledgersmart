@@ -13,16 +13,16 @@ let STATE = {}
 STATE.active_tab_info = { btn_id:"main_tab_btn_overview", tab_id:"main_tab_overview" }
 STATE.conn_error = false
 STATE.appmenu = {}
-//STATE.user_tile_name = null
-STATE.text_based_login = true
+STATE.storeinfo = null
 STATE.datastore_list = { name:[], id:[] }
 STATE.create_user_visible = false
 STATE.user = null
 STATE.password = null
 STATE.dsid = null
-STATE.autologin = false
-STATE.last_user = null
-STATE.remember = { user:false, password:false }
+STATE.autologin = null
+STATE.last_user = {value:null}
+STATE.local_users = {list:[], info:{} }
+
 
 //------------------------ws server connection---------------------------------
 function tryConnect() {
@@ -33,15 +33,7 @@ function tryConnect() {
         conn.onopen = function(event) {
             console.log("Websocket conn is open now.");
             STATE.conn_error = false
-            // check local storage for any autologin data
-            if (STATE.autologin === true){
-                requestAttemptLogin()
-            } else {
-                // we need to get user login now
-                setTimeout(showUserLoginScreen,1000)
-                //showUserLoginScreen()
-            }
-
+            // wait for userlist_update
         };
 
         conn.onmessage = function (event) {

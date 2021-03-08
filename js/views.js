@@ -120,7 +120,7 @@ function clickAppMenuItem(event) {
     }
 
     if (item_id === "app_menu_window_logout" ){
-        
+
         window.location.reload()
     }
     if (item_id === "app_menu_window_close" ){
@@ -193,10 +193,7 @@ function workTabActions(info) {
 function checkInputEnterKey(event) {
     if(event.key === 'Enter') {
         console.log("enter key pressed", event.target.id);
-        if (event.target.id === "login_user_list_password_input"){
-            requestAttemptLogin("login_user_list_attempt_btn")
-        }
-        else if (event.target.id === "login_user_info_pass"){
+        if (event.target.id === "login_user_info_pass"){
             if (STATE.create_user_visible === false) {
                 requestAttemptLogin("login_user_text_attempt_btn")
             }

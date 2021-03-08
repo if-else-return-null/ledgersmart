@@ -27,7 +27,25 @@ function cloneOBJ(obj) { return JSON.parse(JSON.stringify(obj)) }
 
 let SAVE = {}
 SAVE.user = function(username){
+    console.log("LS: Saving user file ",username);
     //LSUSER[username]
+}
+
+WS.sendToAllOtherRoots = function(client_id, packet) {
+    for (let id in WS.clients) {
+        if (WS.clients[id].ws_ref.isAuthed === true && WS.clients[client_id].isRoot === true && id !== client_id) {
+            WS.clients[id].ws_ref.send(JSON.stringify(packet))
+        }
+    }
+}
+
+WS.sendToOtherClientsOfUser = function(client_id, packet) {
+    let username = WS.clients[client_id].username
+    for (let id in WS.clients) {
+        if ( WS.clients[id].ws_ref.isAuthed === true && WS.clients[id].username === username && id !== client_id ) {
+            WS.clients[id].ws_ref.send(JSON.stringify(packet))
+        }
+    }
 }
 
 
