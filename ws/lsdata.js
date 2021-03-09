@@ -9,13 +9,6 @@ let lsconfig = {
     broadcast_users: true
 }
 
-function saveConfig() {
-    let config = {}
-    config.server = WS.config
-    config.ls = lsconfig
-    fs.writeFileSync(lsconfig.app_data_path + "config.json", JSON.stringify(config,null,4) ) //
-}
-
 // used in standalone server mode to get or create config file
 function getConfigInfoCli() {
     const user = process.env.USER
@@ -35,7 +28,7 @@ function getConfigInfoCli() {
         console.log("LS: CREATE: user data folder", app_data_path);
         fs.mkdirSync( app_data_path + "data", { recursive: true } )
         fs.mkdirSync( app_data_path + "user", { recursive: true } )
-        saveConfig()
+        SAVE.config()
 
     } else {
         if (fs.existsSync(app_data_path + "config.json")) {
@@ -44,7 +37,7 @@ function getConfigInfoCli() {
             WS.config = config.server
             lsconfig = config.ls
         } else {
-            saveConfig()
+            SAVE.config()
         }
 
     }
@@ -53,19 +46,7 @@ function getConfigInfoCli() {
 
 }
 //------------------------Data Stores----------------------------------------
-let LSDATA = {
-    /*
-    dsid: {
-        info:{
-            name:"storename",
-
-        },
-        dates:{
-
-        }
-    }
-    */
-}
+let LSDATA = {}
 
 let LsDataStoreList = { name:[], id:[] }
 
@@ -116,13 +97,17 @@ function createDataStore(packet){
         owner:username,
         name:packet.name,
         dsid:dsid,
-        accounts:{},
+        account:{},
         category:{},
         department:{},
         schedule:{}
 
     }
-
+    // setup some inital data
+    // maybe replace these with calls to the normal create functions
+    info.department[generateUUID()] = { name:"Home", sort:10 }
+    info.account[generateUUID()] = { name:"Cash", sort:10, type:"0" }
+    
     path = path.replace("dates", "store.json")
     fs.writeFileSync(path, JSON.stringify(info,null,4) ) //
     LSDATA[dsid] = {
@@ -131,11 +116,14 @@ function createDataStore(packet){
     }
     LsDataStoreList.name.push(LSDATA[dsid].info.name)
     LsDataStoreList.id.push(dsid)
+
     // send list update to roots and other clients of user
     let list_item = { type:"ds_list_update", subtype:"add", name:LSDATA[dsid].info.name, id:dsid }
     WS.sendToOtherClientsOfUser(client_id, list_item)
     WS.sendToAllOtherRoots(client_id, list_item)
+
     // update clients user perm & active datastore
+    //** this could maybe just be an array of uuids matching depts & accounts
     LSUSER[username].perm[dsid] = {}
     LSUSER[username].lastUsedDataStore = dsid
     //WS.clients[client_id].dsid

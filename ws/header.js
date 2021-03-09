@@ -3,7 +3,6 @@ const fs = require('fs');
 const WebSocket = require('ws');
 var https = require('https');
 
-
 // setup websocket object
 let WS = {}
 WS.args = process.argv

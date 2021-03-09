@@ -22,6 +22,7 @@ function clientInit(packet){
     packet.storeinfo = null
     if ( LSUSER[username].isRoot === true){
         packet.datastore_list = LsDataStoreList
+        packet.debug_list = debug_list
     } else {
         for (let dsid in LSUSER[username].perm){
             packet.datastore_list.id.push(dsid)

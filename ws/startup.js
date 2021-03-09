@@ -26,6 +26,23 @@ handle.wsServerIsReady = function () {
 WS.init()
 
 
+let debug_matrix = {
+    lsdata:LSDATA,
+    datastorelist:LsDataStoreList,
+    lsuser:LSUSER,
+    userlist:LsUserList,
+    config: { config:WS.config, lsconfig:lsconfig}
+}
+let debug_list = []
+for ( let item in debug_matrix){ debug_list.push(item) }
+
+function debugGetItem(packet) {
+    packet.item = debug_matrix[packet.name]
+    WS.sendToClient(packet.client_id, packet)
+}
+
+
+
 // below here just for testing
 setTimeout(function(){
     //WS.stopServer()

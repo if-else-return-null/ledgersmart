@@ -89,7 +89,7 @@ for (var i = 0; i < list_edit_buttons.length; i++) {
     list_edit_buttons[i].addEventListener("click", clickListEditButton);
 }
 BYID("toggle_server_broadcast_user_btn").addEventListener('click', toggleServerBroadcastUsers )
-BYID("debug_get_info_btn").addEventListener('click', requestDebugInfo )
+//BYID("debug_get_info_btn").addEventListener('click', requestDebugInfo )
 
 
 BYID("settings_user_remember_user").addEventListener('click', updateRememberSetting )

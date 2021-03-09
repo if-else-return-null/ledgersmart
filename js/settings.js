@@ -47,16 +47,32 @@ function toggleServerBroadcastUsers(){
     conn.send( JSON.stringify({type:"toggle_broadcast_users" }) )
 }
 
-function requestDebugInfo(name){
-    if (typeof(name) !== "string" ){
-        name = BYID("debug_request_input").value
+function requestDebugInfo(event){
+    let name
+    if (typeof(event) === "string" ){
+        name = event
+    } else {
+        name = event.target.id.split("_").pop()
     }
+
     conn.send( JSON.stringify({type:"debug_info", name:name  }) )
 }
 
 function handleDebugInfoResponce(data){
     console.log("DEBUG:",data.name);
     console.log(data.item);
+}
+
+function updateDebugList(list) {
+    let buttonstr = ``
+    list.forEach((item, i) => {
+        buttonstr += `<button class="debug_object_button" type="button" id="debug_object_button_${item}">${item}</button><br>`
+    });
+    BYID("debug_object_button_area").innerHTML = buttonstr
+    let debug_object_button = document.getElementsByClassName("debug_object_button");
+    for (var i = 0; i < list_edit_buttons.length; i++) {
+        debug_object_button[i].addEventListener("click", requestDebugInfo);
+    }
 }
 
 //----------------------settings data------------------------------------------

@@ -66,6 +66,8 @@ function handleIncomingMessage(data) {
         if (STATE.local_users.info[STATE.user].password !== false){
             BYID("settings_user_remember_password").checked = true
         }
+        // check for debug list only for root users 
+        if ( data.debug_list ) { updateDebugList(data.debug_list) }
         // update the list of datasores from server
         STATE.datastore_list = data.datastore_list
         STATE.storeinfo = data.storeinfo
