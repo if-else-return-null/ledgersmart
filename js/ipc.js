@@ -47,6 +47,7 @@ function handleIncomingMessage(data) {
         STATE.password = data.password
         STATE.last_user.value = data.username
         STATE.dsid = data.dsid
+        STATE.isRoot = data.isRoot
         // update local_users and last_user  and remember checkboxes
         if (!STATE.local_users.info[STATE.user]) {
             STATE.local_users.info[STATE.user] = {password:false, dsid:STATE.dsid}
@@ -66,14 +67,14 @@ function handleIncomingMessage(data) {
         if (STATE.local_users.info[STATE.user].password !== false){
             BYID("settings_user_remember_password").checked = true
         }
-        // check for debug list only for root users 
+        // check for debug list only for root users
         if ( data.debug_list ) { updateDebugList(data.debug_list) }
         // update the list of datasores from server
         STATE.datastore_list = data.datastore_list
         STATE.storeinfo = data.storeinfo
         updateDataStoreList()
-        // if our requested store is available reset the app to use it
 
+        // if our requested store is available reset the app to use it
         // if our store is not available or there are no stores
         // bring up the settings:data screen
         if (STATE.dsid === null) {
@@ -96,6 +97,16 @@ function handleIncomingMessage(data) {
     }
     if (data.type === "debug_info") {
         handleDebugInfoResponce(data)
+    }
+
+    if (data.type === "datastore_update_department") {
+        handleUpdateDataStoreDepartment(data)
+    }
+    if (data.type === "datastore_update_account") {
+        handleUpdateDataStoreAccount(data)
+    }
+    if (data.type === "datastore_update_category") {
+        handleUpdateDataStoreCategory(data)
     }
 }
 

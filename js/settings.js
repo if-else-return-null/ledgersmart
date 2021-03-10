@@ -140,28 +140,61 @@ function changeActiveDataStore(){
 }
 
 console.log("queryselect", document.querySelector('input[name="data_store_new_account_type"]:checked').value);
-//
 
-function clickListEditButton(event) {
-    let item_id
-    if (typeof(event) === "string") {
-        item_id = event
-    } else {
-        item_id = event.target.id
+// check if user is allowed to create create/modify/delete --> account/category/department
+// these permissions will be checked again on the server to counter a user altering STATE
+function createOK() {
+    let ok = true
+    if (STATE.dsid === null || STATE.storeinfo === null) { ok = false }
+    if ( STATE.user !== STATE.storeinfo.owner ){
+        if (!STATE.storeinfo.creators.includes(STATE.user)) { ok = false } //*** maybe display warning
     }
-    //data_store_department_list_edit
-    let viewid = "data_store_" + item_id.split("_").pop() + "_list_edit"
-    console.log("clickListEditButton", viewid);
-    if (!STATE.view[viewid]) {STATE.view[viewid] = false}
-    if (STATE.view[viewid] === false) {
-        BYID(viewid).style.height = "auto"
-    } else {
-        BYID(viewid).style.height = "var(--list_edit_height)"
-    }
-    STATE.view[viewid] = !STATE.view[viewid]
-
+    if (STATE.isRoot === true) { ok = true }
+    return ok
 }
 
+
+function createDataStoreDepartment() {
+    if (createOK() === false ) { return; }
+    let name = BYID("data_store_new_department_name").value
+    conn.send( JSON.stringify({type:"datastore_update_department", uuid:"new", name:name }) )
+}
+
+function createDataStoreAccount() {
+    if (createOK() === false ) { return; }
+    let name = BYID("data_store_new_account_name").value
+    let accttype = document.querySelector('input[name="data_store_new_account_type"]:checked').value;
+    conn.send( JSON.stringify({type:"datastore_update_account", uuid:"new", name:name , atype: accttype   }) )
+
+}
+function createDataStoreCategory() {
+    if (createOK() === false ) { return; }
+    let name = BYID("data_store_new_account_name").value
+    let cattype = document.querySelector('input[name="data_store_new_category_type"]:checked').value;
+    conn.send( JSON.stringify({type:"datastore_update_category", uuid:"new", name:name , ctype: cattype  }) )
+}
+
+function handleUpdateDataStoreDepartment(data) {
+    if ( data.success === false ){
+
+    } else {
+
+    }
+}
+function handleUpdateDataStoreAccount(data) {
+    if ( data.success === false ){
+
+    } else {
+
+    }
+}
+function handleUpdateDataStoreCategory(data) {
+    if ( data.success === false ){
+
+    } else {
+
+    }
+}
 
 //-------------------------------settings users--------------------------------
 

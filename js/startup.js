@@ -88,6 +88,12 @@ let list_edit_buttons = document.getElementsByClassName("list_edit_button");
 for (var i = 0; i < list_edit_buttons.length; i++) {
     list_edit_buttons[i].addEventListener("click", clickListEditButton);
 }
+
+
+BYID("data_store_new_department_create_button").addEventListener('click', createDataStoreDepartment )
+BYID("data_store_new_account_create_button").addEventListener('click', createDataStoreAccount )
+BYID("data_store_new_category_create_button").addEventListener('click', createDataStoreCategory )
+
 BYID("toggle_server_broadcast_user_btn").addEventListener('click', toggleServerBroadcastUsers )
 //BYID("debug_get_info_btn").addEventListener('click', requestDebugInfo )
 

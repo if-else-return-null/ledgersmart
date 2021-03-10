@@ -16,6 +16,15 @@ WS.sendToAllOtherRoots = function(client_id, packet) {
     }
 }
 
+WS.sendToAllClientsOfUser = function(client_id, packet) {
+    let username = WS.clients[client_id].username
+    for (let id in WS.clients) {
+        if ( WS.clients[id].ws_ref.isAuthed === true && WS.clients[id].username === username ) {
+            WS.clients[id].ws_ref.send(JSON.stringify(packet))
+        }
+    }
+}
+
 WS.sendToOtherClientsOfUser = function(client_id, packet) {
     let username = WS.clients[client_id].username
     for (let id in WS.clients) {
@@ -24,6 +33,22 @@ WS.sendToOtherClientsOfUser = function(client_id, packet) {
         }
     }
 }
+
+WS.sendToAllOtherCreators = function(client_id, dsid, packet) {
+    let username = WS.clients[client_id].username
+    LSDATA[dsid].info.creators.forEach((item, i) => {
+        if (item !== username) {
+            for (let id in WS.clients) {
+                if ( WS.clients[id].ws_ref.isAuthed === true && WS.clients[id].username === item && id !== client_id ) {
+                    WS.clients[id].ws_ref.send(JSON.stringify(packet))
+                }
+            }
+        }
+
+    });
+
+}
+
 
 /* // need to update to node 15.11 for this
 const crypto = require('crypto');
@@ -76,6 +101,10 @@ function getTimeNow(secs) {
     if (secs === undefined) { d = new Date() } else { d = new Date(secs) }
     let datenow  = [    ('0' + d.getHours() ).slice(-2),  ('0' + d.getMinutes()).slice(-2)].join(':');
     return datenow
+}
+
+function getTimeStamp() {
+    return getTimeNow()+"_"+getTimeNow()
 }
 
 function cloneOBJ(obj) { return JSON.parse(JSON.stringify(obj)) }

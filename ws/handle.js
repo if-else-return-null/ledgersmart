@@ -39,9 +39,8 @@ handle.wsNewClientConnect = function(client_id) {
 
 handle.clientAuthorize = function (client_id, packet) {
     packet.client_id = client_id
-    console.log("WS: client init");
-    // clients first message(auth) should be a client_init request
-    // *** eventually this may require some sort of actual authing
+    console.log("WS: clientAuthorize");
+    // clients first message(auth) should be a user_login or user_create request
     if (packet.type && packet.type === "user_login") {
         // check login info
         let loginok = checkUserLogin(packet)
@@ -111,12 +110,23 @@ handle.wsClientMessage = function (client_id, packet){
             debugGetItem(packet)
         }
     }
-
+    // ------------DATA STORES
     if (packet.type && packet.type === "datastore_create") {
         createDataStore(packet)
     }
     if (packet.type && packet.type === "datastore_change") {
-        changeDataStore(packet)
+        changeActiveDataStore(packet)
+    }
+
+    //-------account/category/department
+    if (packet.type && packet.type === "datastore_update_department") {
+        updateDataStoreDepartment(packet)
+    }
+    if (packet.type && packet.type === "datastore_update_account") {
+        updateDataStoreAccount(packet)
+    }
+    if (packet.type && packet.type === "datastore_update_category") {
+        updateDataStoreCategory(packet)
     }
 }
 

@@ -4,6 +4,7 @@ function clientInit(packet){
     let client_id = packet.client_id
     let username = packet.username.toLowerCase()
     packet.type = "client_init"
+    packet.isRoot = false
     WS.clients[client_id].username = username
     WS.clients[client_id].isRoot = LSUSER[username].isRoot
     WS.clients[client_id].dsid = LSUSER[username].lastUsedDataStore
@@ -23,6 +24,7 @@ function clientInit(packet){
     if ( LSUSER[username].isRoot === true){
         packet.datastore_list = LsDataStoreList
         packet.debug_list = debug_list
+        packet.isRoot = true
     } else {
         for (let dsid in LSUSER[username].perm){
             packet.datastore_list.id.push(dsid)
@@ -45,6 +47,8 @@ function clientInit(packet){
             LSUSER[username].lastUsedDataStore = null
         }
     }
+    //*** eventually this will have to adjust or modify the storeinfo
+    //    based on the users permissions
     if (packet.dsid !== null){ packet.storeinfo = LSDATA[packet.dsid].info }
 
     WS.sendToClient(client_id, packet)
@@ -89,7 +93,7 @@ function createUserAccount(packet) {
     return true
 }
 
-
+//*** this needs to be updated to use node crypto (currently plain txt)
 function checkUserLogin(packet){
     let username = packet.username.toLowerCase()
     let password = packet.password
@@ -110,7 +114,7 @@ function checkUserLogin(packet){
 
 //------------ datastore
 
-function changeDataStore(packet) {
+function changeActiveDataStore(packet) {
     let client_id = packet.client_id
     packet.username = WS.clients[client_id].username
     console.log("LS: Change active data store ");

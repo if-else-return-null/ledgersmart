@@ -113,14 +113,12 @@ function clickAppMenuItem(event) {
     console.log("appmenuitem click", item_id);
     // window
     if (item_id === "app_menu_window_new" ){
-        //*** eventually this should include a method to auto log into current user
-        // maybe through the use of a localStorage item
+        // when opening new windows we will auto log into current user
         let loginfo = {user:STATE.user, password:STATE.password, dsid:STATE.dsid}
         lsapi.send("client_window",{type:"request_new_window", autologin:loginfo })
     }
 
     if (item_id === "app_menu_window_logout" ){
-
         window.location.reload()
     }
     if (item_id === "app_menu_window_close" ){
@@ -188,6 +186,31 @@ function workTabActions(info) {
         BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
     }
 }
+
+//----------------------- settings:data misc controls------------------------
+
+// used to hide and show _list_edit views
+function clickListEditButton(event) {
+    let item_id
+    if (typeof(event) === "string") {
+        item_id = event
+    } else {
+        item_id = event.target.id
+    }
+    //data_store_department_list_edit
+    let viewid = "data_store_" + item_id.split("_").pop() + "_list_edit"
+    console.log("clickListEditButton", viewid);
+    if (!STATE.view[viewid]) {STATE.view[viewid] = false}
+    if (STATE.view[viewid] === false) {
+        BYID(viewid).style.height = "auto"
+    } else {
+        BYID(viewid).style.height = "var(--list_edit_height)"
+    }
+    STATE.view[viewid] = !STATE.view[viewid]
+
+}
+
+
 
 //---------------------misc controls--------------------------------------
 function checkInputEnterKey(event) {

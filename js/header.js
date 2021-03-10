@@ -19,6 +19,7 @@ STATE.create_user_visible = false
 STATE.user = null
 STATE.password = null
 STATE.dsid = null
+STATE.isRoot = false
 STATE.autologin = null
 STATE.last_user = {value:null}
 STATE.local_users = {list:[], info:{} }

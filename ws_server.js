@@ -495,19 +495,7 @@ function getConfigInfoCli() {
 
 }
 //------------------------Data Stores----------------------------------------
-let LSDATA = {
-    /*
-    dsid: {
-        info:{
-            name:"storename",
-
-        },
-        dates:{
-
-        }
-    }
-    */
-}
+let LSDATA = {}
 
 let LsDataStoreList = { name:[], id:[] }
 
@@ -545,6 +533,156 @@ function loadDataStores() {
     console.log("LS: Finished loading data stores");
 }
 
+//--------------------------------user accounts--------------------------------
+let LSUSER = {
+
+}
+let LsUserList = []
+
+function loadUsers() {
+    console.log("LS: Begin loading user accounts");
+    let path = lsconfig.app_data_path + "user"
+    let filelist =  fs.readdirSync( path , { })
+    console.log("filelist",filelist);
+    for (var i = 0; i < filelist.length; i++) {
+        if ( filelist[i].endsWith(".json") ){
+            console.log("found user file");
+            let username = filelist[i].replace(".json","")
+            LSUSER[username] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
+            if (LSUSER[username].isRoot === true) {
+                STATE.found_root_user = true
+                STATE.rootUsers.push(username)
+            }
+            // add to lists
+            LsUserList.push(username)
+        }
+    }
+    console.log("LS: Finished loading user accounts", LSUSER);
+}
+//------------------------clients--------------------------------------------
+
+function clientInit(packet){
+    let client_id = packet.client_id
+    let username = packet.username.toLowerCase()
+    packet.type = "client_init"
+    packet.isRoot = false
+    WS.clients[client_id].username = username
+    WS.clients[client_id].isRoot = LSUSER[username].isRoot
+    WS.clients[client_id].dsid = LSUSER[username].lastUsedDataStore
+    //*** need to check for user requested dsid
+    if (packet.dsid && packet.dsid !== null){
+        if ( LSDATA[packet.dsid] ){
+            if ( LSUSER[username].isRoot === true || LSUSER[username].perm[packet.dsid] ){
+                WS.clients[client_id].dsid = packet.dsid
+                LSUSER[username].lastUsedDataStore = packet.dsid
+            }
+        }
+    }
+
+    packet.dsid = LSUSER[username].lastUsedDataStore
+    packet.datastore_list = { name:[], id:[] }
+    packet.storeinfo = null
+    if ( LSUSER[username].isRoot === true){
+        packet.datastore_list = LsDataStoreList
+        packet.debug_list = debug_list
+        packet.isRoot = true
+    } else {
+        for (let dsid in LSUSER[username].perm){
+            packet.datastore_list.id.push(dsid)
+            packet.datastore_list.name.push(LSDATA[dsid].name)
+        }
+    }
+
+    // if we have the last used data store set the client  to that store
+    if (packet.dsid !== null){
+        // check that this data store exists
+        if ( !LsDataStoreList.id.includes(packet.dsid)) {
+            packet.dsid = null
+            WS.clients[client_id].dsid = null
+            LSUSER[username].lastUsedDataStore = null
+        }
+        // check that non-root users have permission on this data store
+        if ( LSUSER[username].isRoot === false && !packet.datastore_list.id.includes(packet.dsid)  ) {
+            packet.dsid = null
+            WS.clients[client_id].dsid = null
+            LSUSER[username].lastUsedDataStore = null
+        }
+    }
+    //*** eventually this will have to adjust or modify the storeinfo
+    //    based on the users permissions
+    if (packet.dsid !== null){ packet.storeinfo = LSDATA[packet.dsid].info }
+
+    WS.sendToClient(client_id, packet)
+    SAVE.user(username)
+}
+
+
+
+//---------------------users--------------------------------------------------
+function createUserAccount(packet) {
+    // check if username already exists
+    let client_id = packet.client_id
+    let username = packet.username.toLowerCase()
+    if (LsUserList.includes(username)){
+        // username already exists
+        packet.success = false
+        packet.reason = "Username already exists"
+        WS.sendToClient(client_id, packet)
+        return false
+    }
+    // setup new user object
+    let userinfo = {
+        displayName: packet.username,
+        id:username,
+        username:username,
+        password:packet.password,
+        isRoot:false,
+        perm:{},
+        lastUsedDataStore:null
+    }
+    // check if this is the servers first user
+    if (STATE.found_root_user === false){
+        userinfo.isRoot = true
+        STATE.rootUsers.push(username)
+        STATE.found_root_user = true
+    }
+    LSUSER[username] = cloneOBJ(userinfo)
+    LsUserList.push(username)
+
+    // save the user data
+    SAVE.user(username)
+    return true
+}
+
+//*** this needs to be updated to use node crypto (currently plain txt)
+function checkUserLogin(packet){
+    let username = packet.username.toLowerCase()
+    let password = packet.password
+    console.log("checking user login ", username, password);
+    // check for valid user
+    if (!LsUserList.includes(username)) {
+        return false
+    }
+    if (password !== LSUSER[username].password) {
+        return false
+    }
+    // good user and pass
+    return true
+
+
+
+}
+
+//------------ datastore
+
+function changeActiveDataStore(packet) {
+    let client_id = packet.client_id
+    packet.username = WS.clients[client_id].username
+    console.log("LS: Change active data store ");
+    clientInit(packet)
+
+}
+
 function createDataStore(packet){
     console.log("LS: Creating new datastore", packet);
     let client_id = packet.client_id
@@ -556,14 +694,18 @@ function createDataStore(packet){
 
     let info = {
         owner:username,
+        creators:[], // list of usernames that can create/modify/delete account/category/department
         name:packet.name,
         dsid:dsid,
-        accounts:{},
+        account:{},
         category:{},
         department:{},
-        schedule:{}
-
+        schedule:{} // this should be keyed to each user
     }
+    // setup some inital data
+    // maybe replace these with calls to the normal create functions
+    info.department[generateUUID()] = { name:"Home", sort:10 }
+    info.account[generateUUID()] = { name:"Cash", sort:10, type:"0" }
 
     path = path.replace("dates", "store.json")
     fs.writeFileSync(path, JSON.stringify(info,null,4) ) //
@@ -573,11 +715,14 @@ function createDataStore(packet){
     }
     LsDataStoreList.name.push(LSDATA[dsid].info.name)
     LsDataStoreList.id.push(dsid)
+
     // send list update to roots and other clients of user
     let list_item = { type:"ds_list_update", subtype:"add", name:LSDATA[dsid].info.name, id:dsid }
     WS.sendToOtherClientsOfUser(client_id, list_item)
     WS.sendToAllOtherRoots(client_id, list_item)
+
     // update clients user perm & active datastore
+    //** this could maybe just be an array of uuids matching depts & accounts
     LSUSER[username].perm[dsid] = {}
     LSUSER[username].lastUsedDataStore = dsid
     //WS.clients[client_id].dsid
@@ -589,30 +734,53 @@ function createDataStore(packet){
 
 }
 
+function checkForCreator(username,dsid) {
+    let ok = true
+    if ( !LSDATA[dsid] ) { ok = false }
+    if ( username !== LSDATA[dsid].info.owner ){
+        if (!LSDATA[dsid].info.creators.includes(username)) { ok = false } //*** maybe display warning
+    }
+    if (LSUSER[username].isRoot === true) { ok = true }
+    return ok
+}
 
-//--------------------------------user accounts--------------------------------
-let LSUSER = {
+
+//-------account/category/department
+function updateDataStoreDepartment(packet){
+    let client_id = packet.client_id
+    let username = WS.clients[client_id].username
+    let dsid = WS.clients[client_id].dsid
+    if ( checkForCreator(username,dsid) === false ) {
+        // *** maybe send back a responce
+        console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
+        return;
+    }
+    console.log(`LS: updateDataStoreDepartment `,packet);
+
 
 }
-let LsUserList = []
-
-function loadUsers() {
-    console.log("LS: Begin loading user accounts");
-    let path = lsconfig.app_data_path + "user"
-    let filelist =  fs.readdirSync( path , { })
-    for (var i = 0; i < filelist.length; i++) {
-        if ( filelist[i].endsWith(".json") ){
-            let username = filelist[i].replace(".json","")
-            LSDATA[username] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
-            if (LSDATA[username].isRoot === true) {
-                STATE.found_root_user = true
-                STATE.rootUsers.push(username)
-            }
-            // add to lists
-            LsUserList.push(username)
-        }
+function updateDataStoreAccount(packet){
+    let client_id = packet.client_id
+    let username = WS.clients[client_id].username
+    let dsid = WS.clients[client_id].dsid
+    if ( checkForCreator(username,dsid) === false ) {
+        // *** maybe send back a responce
+        console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
+        return;
     }
-    console.log("LS: Finished loading user accounts");
+    console.log(`LS: updateDataStoreAccount `,packet);
+
+}
+function updateDataStoreCategory(packet){
+    let client_id = packet.client_id
+    let username = WS.clients[client_id].username
+    let dsid = WS.clients[client_id].dsid
+    if ( checkForCreator(username,dsid) === false ) {
+        // *** maybe send back a responce
+        console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
+        return;
+    }
+    console.log(`LS: updateDataStoreCategory `,packet);
 }
 
 // from this point you would define the all the logic, functions, data, etc that is
@@ -655,9 +823,8 @@ handle.wsNewClientConnect = function(client_id) {
 
 handle.clientAuthorize = function (client_id, packet) {
     packet.client_id = client_id
-    console.log("WS: client init");
-    // clients first message(auth) should be a client_init request
-    // *** eventually this may require some sort of actual authing
+    console.log("WS: clientAuthorize");
+    // clients first message(auth) should be a user_login or user_create request
     if (packet.type && packet.type === "user_login") {
         // check login info
         let loginok = checkUserLogin(packet)
@@ -727,12 +894,23 @@ handle.wsClientMessage = function (client_id, packet){
             debugGetItem(packet)
         }
     }
-
+    // ------------DATA STORES
     if (packet.type && packet.type === "datastore_create") {
         createDataStore(packet)
     }
     if (packet.type && packet.type === "datastore_change") {
-        changeDataStore(packet)
+        changeActiveDataStore(packet)
+    }
+
+    //-------account/category/department
+    if (packet.type && packet.type === "datastore_update_department") {
+        updateDataStoreDepartment(packet)
+    }
+    if (packet.type && packet.type === "datastore_update_account") {
+        updateDataStoreAccount(packet)
+    }
+    if (packet.type && packet.type === "datastore_update_category") {
+        updateDataStoreCategory(packet)
     }
 }
 
@@ -753,125 +931,6 @@ handle.parentMessage = function (msg){
     if (msg.type === "shutdown_server") {
         WS.stopServer()
     }
-}
-//------------------------clients--------------------------------------------
-
-function clientInit(packet){
-    let client_id = packet.client_id
-    let username = packet.username.toLowerCase()
-    packet.type = "client_init"
-    WS.clients[client_id].username = username
-    WS.clients[client_id].isRoot = LSUSER[username].isRoot
-    WS.clients[client_id].dsid = LSUSER[username].lastUsedDataStore
-    //*** need to check for user requested dsid
-    if (packet.dsid && packet.dsid !== null){
-        if ( LSDATA[packet.dsid] ){
-            if ( LSUSER[username].isRoot === true || LSUSER[username].perm[packet.dsid] ){
-                WS.clients[client_id].dsid = packet.dsid
-                LSUSER[username].lastUsedDataStore = packet.dsid
-            }
-        }
-    }
-
-    packet.dsid = LSUSER[username].lastUsedDataStore
-    packet.datastore_list = { name:[], id:[] }
-    packet.storeinfo = null
-    if ( LSUSER[username].isRoot === true){
-        packet.datastore_list = LsDataStoreList
-        packet.debug_list = debug_list
-    } else {
-        for (let dsid in LSUSER[username].perm){
-            packet.datastore_list.id.push(dsid)
-            packet.datastore_list.name.push(LSDATA[dsid].name)
-        }
-    }
-
-    // if we have the last used data store set the client  to that store
-    if (packet.dsid !== null){
-        // check that this data store exists
-        if ( !LsDataStoreList.id.includes(packet.dsid)) {
-            packet.dsid = null
-            WS.clients[client_id].dsid = null
-            LSUSER[username].lastUsedDataStore = null
-        }
-        // check that non-root users have permission on this data store
-        if ( LSUSER[username].isRoot === false && !packet.datastore_list.id.includes(packet.dsid)  ) {
-            packet.dsid = null
-            WS.clients[client_id].dsid = null
-            LSUSER[username].lastUsedDataStore = null
-        }
-    }
-    if (packet.dsid !== null){ packet.storeinfo = LSDATA[packet.dsid].info }
-
-    WS.sendToClient(client_id, packet)
-    SAVE.user(username)
-}
-
-
-
-//---------------------users--------------------------------------------------
-function createUserAccount(packet) {
-    // check if username already exists
-    let client_id = packet.client_id
-    let username = packet.username.toLowerCase()
-    if (LsUserList.includes(username)){
-        // username already exists
-        packet.success = false
-        packet.reason = "Username already exists"
-        WS.sendToClient(client_id, packet)
-        return false
-    }
-    // setup new user object
-    let userinfo = {
-        displayName: packet.username,
-        id:username,
-        username:username,
-        password:packet.password,
-        isRoot:false,
-        perm:{},
-        lastUsedDataStore:null
-    }
-    // check if this is the servers first user
-    if (STATE.found_root_user === false){
-        userinfo.isRoot = true
-        STATE.rootUsers.push(username)
-        STATE.found_root_user = true
-    }
-    LSUSER[username] = cloneOBJ(userinfo)
-    LsUserList.push(username)
-
-    // save the user data
-    SAVE.user(username)
-    return true
-}
-
-
-function checkUserLogin(packet){
-    let username = packet.username.toLowerCase()
-    let password = packet.password
-    console.log("checking user login ", username, password);
-    // check for valid user
-    if (!LsUserList.includes(username)) {
-        return false
-    }
-    if (password !== LSUSER[username].password) {
-        return false
-    }
-    // good user and pass
-    return true
-
-
-
-}
-
-//------------ datastore
-
-function changeDataStore(packet) {
-    let client_id = packet.client_id
-    packet.username = WS.clients[client_id].username
-    console.log("LS: Change active data store ");
-    clientInit(packet)
-
 }
 
 // setup config and data info for standalone server

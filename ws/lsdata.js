@@ -84,58 +84,6 @@ function loadDataStores() {
     console.log("LS: Finished loading data stores");
 }
 
-function createDataStore(packet){
-    console.log("LS: Creating new datastore", packet);
-    let client_id = packet.client_id
-    let username = WS.clients[client_id].username
-    packet.username = username
-    let dsid = packet.uuid
-    let path = lsconfig.app_data_path + "data/"+ dsid + "/dates"
-    fs.mkdirSync( path, { recursive: true } )
-
-    let info = {
-        owner:username,
-        name:packet.name,
-        dsid:dsid,
-        account:{},
-        category:{},
-        department:{},
-        schedule:{}
-
-    }
-    // setup some inital data
-    // maybe replace these with calls to the normal create functions
-    info.department[generateUUID()] = { name:"Home", sort:10 }
-    info.account[generateUUID()] = { name:"Cash", sort:10, type:"0" }
-    
-    path = path.replace("dates", "store.json")
-    fs.writeFileSync(path, JSON.stringify(info,null,4) ) //
-    LSDATA[dsid] = {
-        info:cloneOBJ(info),
-        dates:{}
-    }
-    LsDataStoreList.name.push(LSDATA[dsid].info.name)
-    LsDataStoreList.id.push(dsid)
-
-    // send list update to roots and other clients of user
-    let list_item = { type:"ds_list_update", subtype:"add", name:LSDATA[dsid].info.name, id:dsid }
-    WS.sendToOtherClientsOfUser(client_id, list_item)
-    WS.sendToAllOtherRoots(client_id, list_item)
-
-    // update clients user perm & active datastore
-    //** this could maybe just be an array of uuids matching depts & accounts
-    LSUSER[username].perm[dsid] = {}
-    LSUSER[username].lastUsedDataStore = dsid
-    //WS.clients[client_id].dsid
-    SAVE.user(username)
-
-    // we should probobly just do client_init now so the new
-    // datastore can be set in the client
-    clientInit(packet)
-
-}
-
-
 //--------------------------------user accounts--------------------------------
 let LSUSER = {
 
@@ -146,11 +94,13 @@ function loadUsers() {
     console.log("LS: Begin loading user accounts");
     let path = lsconfig.app_data_path + "user"
     let filelist =  fs.readdirSync( path , { })
+    console.log("filelist",filelist);
     for (var i = 0; i < filelist.length; i++) {
         if ( filelist[i].endsWith(".json") ){
+            console.log("found user file");
             let username = filelist[i].replace(".json","")
-            LSDATA[username] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
-            if (LSDATA[username].isRoot === true) {
+            LSUSER[username] = JSON.parse( fs.readFileSync(path + "/" + filelist[i] ,'utf8') )
+            if (LSUSER[username].isRoot === true) {
                 STATE.found_root_user = true
                 STATE.rootUsers.push(username)
             }
@@ -158,5 +108,5 @@ function loadUsers() {
             LsUserList.push(username)
         }
     }
-    console.log("LS: Finished loading user accounts");
+    console.log("LS: Finished loading user accounts", LSUSER);
 }
