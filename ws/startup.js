@@ -31,13 +31,16 @@ let debug_matrix = {
     datastorelist:LsDataStoreList,
     lsuser:LSUSER,
     userlist:LsUserList,
-    config: { config:WS.config, lsconfig:lsconfig}
+    config: { config:WS.config, lsconfig:lsconfig},
+    wsclients:WS.clients
+
 }
 let debug_list = []
 for ( let item in debug_matrix){ debug_list.push(item) }
 
 function debugGetItem(packet) {
-    packet.item = debug_matrix[packet.name]
+    console.log("debugGetItem" , packet);
+    packet.item = JSON.stringify(debug_matrix[packet.name])
     WS.sendToClient(packet.client_id, packet)
 }
 

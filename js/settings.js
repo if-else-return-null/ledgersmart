@@ -54,13 +54,13 @@ function requestDebugInfo(event){
     } else {
         name = event.target.id.split("_").pop()
     }
-
+    console.log("requestDebugInfo ", name);
     conn.send( JSON.stringify({type:"debug_info", name:name  }) )
 }
 
 function handleDebugInfoResponce(data){
     console.log("DEBUG:",data.name);
-    console.log(data.item);
+    console.log( JSON.parse(data.item) );
 }
 
 function updateDebugList(list) {
@@ -70,9 +70,11 @@ function updateDebugList(list) {
     });
     BYID("debug_object_button_area").innerHTML = buttonstr
     let debug_object_button = document.getElementsByClassName("debug_object_button");
-    for (var i = 0; i < list_edit_buttons.length; i++) {
+    for (var i = 0; i < debug_object_button.length; i++) {
         debug_object_button[i].addEventListener("click", requestDebugInfo);
     }
+
+
 }
 
 //----------------------settings data------------------------------------------
@@ -106,8 +108,33 @@ function updateDataStoreList(){
 
 }
 
+// add or remove items from the datastore_list
+//*** maybe add a check  that we
+function handleDataStoreListEdit(data) {
+    console.log("handleDataStoreListEdit", data);
+    if (data.subtype === "add"){
+        STATE.datastore_list.name.push(data.name)
+        STATE.datastore_list.id.push(data.id)
+    }
+    if (data.subtype === "remove"){
+        // a data store was deleted by another client
+        // check that we're not removing the active dsid for this window
+        if (data.id === STATE.dsid) {
+            // logout the window
+            clickAppMenuItem("app_menu_window_logout")
+            return;
+        }
+        let i = STATE.datastore_list.id.indexOf(data.id)
+        STATE.datastore_list.name.splice(i,1)
+        STATE.datastore_list.id.splice(i,1)
+    }
+    updateDataStoreList()
+
+}
+
 function resetCreateDataStore(){
     BYID("data_store_new_name_warning").innerHTML = "&nbsp;"
+    BYID("data_store_new_name").value = ""
 }
 
 function requestCreateDataStore(){
@@ -123,8 +150,10 @@ function requestCreateDataStore(){
     }
     if (requestOK === false) { return;}
     showModal("modal_dynamic", "<h2>Requesting new data store</h2>")
-    conn.send( JSON.stringify({type:"datastore_create", name:storename, uuid:generateUUIDv4() }) )
+    conn.send( JSON.stringify({type:"datastore_create", name:storename }) )
     // on success the server will send a client_init packet with the new store
+    // there can be no failure so clear the input
+    resetCreateDataStore()
 }
 
 function setActiveDataStore(){

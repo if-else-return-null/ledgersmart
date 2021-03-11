@@ -94,29 +94,38 @@
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_server"> Server </div>
             </div>
             <div class="worktab_view" id="mt_view_settings_data">
-                Data Store Settings | Active Store: <span id="data_store_active_display"></span>
+                Data Settings
                 <hr>
-                <div class="item_card" id="">
-                    Change Active Data Store<hr>
-                    <span class="input_warning" id="data_store_selector_warning"></span>
+                <div class="item_card item_card_full" id="">
+                    Datastore<hr>
+                    Active <span id="data_store_active_display"></span>: &nbsp;
                     <select class="" id="data_store_selector">
 
-                    </select>
+                    </select>&nbsp;&nbsp;
+                    <span class="input_warning" id="data_store_selector_warning"></span>
                     <h4 class="h_button" id="data_store_change_button">Change</h4>
+                    <hr>
 
-                </div>
-                <div class="item_card" id="">
-                    Create New Data Store<hr>
                     <span class="input_warning" id="data_store_new_name_warning">&nbsp;</span><br>
-                    <input type="text" id="data_store_new_name" placeholder="NewDataStoreName" value="">
+                    <input type="text" id="data_store_new_name" placeholder="New Datastore Name" value="">&nbsp;&nbsp;
                     <h4 class="h_button" id="data_store_new_create_button">Create</h4>
-
+                    <hr>
+                    <div class="data_items_list_edit" id="data_store_thisstore_list_edit">
+                        <h4 class="h_button list_edit_button" id="data_store_list_edit_button_thisstore">Edit</h4>
+                        <div class="list_edit_table_area">
+                            Edit this data store
+                            <input type="text" id="data_store_rename_name" placeholder="Rename Datastore" value="">&nbsp;&nbsp;
+                            <h4 class="h_button" id="data_store_rename_name_button">Rename</h4>
+                            
+                        </div>
+                    </div>
                 </div>
-                <hr>
+
+
                 <div class="item_card item_card_full" id="">
                     Department<hr>
                     <span class="input_warning" id="data_store_new_department_warning">&nbsp;</span><br>
-                    <input type="text" id="data_store_new_department_name" placeholder="New Department Name" value=""><br>
+                    <input type="text" id="data_store_new_department_name" placeholder="New Department Name" value="">&nbsp;&nbsp;
 
                     <h4 class="h_button" id="data_store_new_department_create_button">Create</h4>
 
@@ -202,7 +211,7 @@
                 Server Settings<hr>
                 SERVER<br>
                 <button type="button" id="toggle_server_broadcast_user_btn">Toggle broadcast users</button><br>
-                
+
                 <div class="item_card" >
                     Server Data Objects<hr>
                     <span id="debug_object_button_area"> </span>

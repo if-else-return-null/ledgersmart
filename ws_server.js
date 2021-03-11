@@ -240,8 +240,8 @@ WS.startServer = function () {
         ws.rlBucket = { time:ws.connnectTime,count:0 }
         ws.isAuthed = false
         // give an id and setup client in WS.clients
-        ws.client_id = WS.new_client_id;
-        WS.clients[WS.new_client_id] = { ws_ref: ws , id : WS.new_client_id  }
+        ws.client_id = String(WS.new_client_id);
+        WS.clients[ws.client_id] = { ws_ref: ws , id : ws.client_id  }
         WS.new_client_id += 1;
 
         ws.on('pong', heartbeat);
@@ -361,10 +361,63 @@ STATE.rootUsers = []
 // update help info for ledgersmart
 WS.help.cli_options["--config"] = "Specify a config file to use. Note that this will only override valid server config properties"
 
+// send to roots, creators, and anyone with permissions
+// any keys(root|creators|users) in skip will be will be ignored
+// if permid is included in skip it will be the uuid expected to be in a users perm array
+WS.sendToOthers = function (client_id, packet, skip = {})  {
+    let sent_ids = []
+    let dsid = WS.clients[client_id].dsid
+    for (let id in WS.clients) {
+        console.log(typeof(id), typeof(client_id));
+        if (id !== client_id && WS.clients[id].ws_ref.isAuthed === true && !sent_ids.includes(id)) {
+            // roots
+            if ( !skip.root && !sent_ids.includes(id) ){
+                if ( WS.clients[client_id].isRoot === true ) {
+                    WS.clients[id].ws_ref.send(JSON.stringify(packet))
+                    sent_ids.push(id)
+                }
+            }
+            // creators
+            if ( !skip.creators && !sent_ids.includes(id) ){
+                if ( LSDATA[dsid].creators.includes(WS.clients[id].username)) {
+                    WS.clients[id].ws_ref.send(JSON.stringify(packet))
+                    sent_ids.push(id)
+                }
+            }
+            // other users with proper permissions
+            if ( !skip.perm && !sent_ids.includes(id) ){
+                if ( skip.permid ) {
+                    if ( LSUSER[WS.clients[id].username].perm[dsid] && LSUSER[WS.clients[id].username].perm[dsid].includes(skip.permid)) {
+                        WS.clients[id].ws_ref.send(JSON.stringify(packet))
+                        sent_ids.push(id)
+                    }
+                }
+
+            }
+            // other clients of this user
+            if ( !sent_ids.includes(id) ) {
+                if ( WS.clients[id].username === username  ) {
+                    WS.clients[id].ws_ref.send(JSON.stringify(packet))
+                }
+            }
+        }
+    }
+    console.log("sendToOthers", sent_ids);
+}
+
 
 WS.sendToAllOtherRoots = function(client_id, packet) {
     for (let id in WS.clients) {
         if (WS.clients[id].ws_ref.isAuthed === true && WS.clients[client_id].isRoot === true && id !== client_id) {
+            WS.clients[id].ws_ref.send(JSON.stringify(packet))
+        }
+    }
+}
+
+WS.sendToAllClientsOfUser = function(client_id, packet) {
+    let username = WS.clients[client_id].username
+    for (let id in WS.clients) {
+        if ( WS.clients[id].ws_ref.isAuthed === true && WS.clients[id].username === username ) {
             WS.clients[id].ws_ref.send(JSON.stringify(packet))
         }
     }
@@ -378,6 +431,22 @@ WS.sendToOtherClientsOfUser = function(client_id, packet) {
         }
     }
 }
+
+WS.sendToAllOtherCreators = function(client_id, dsid, packet) {
+    let username = WS.clients[client_id].username
+    LSDATA[dsid].info.creators.forEach((item, i) => {
+        if (item !== username) {
+            for (let id in WS.clients) {
+                if ( WS.clients[id].ws_ref.isAuthed === true && WS.clients[id].username === item && id !== client_id ) {
+                    WS.clients[id].ws_ref.send(JSON.stringify(packet))
+                }
+            }
+        }
+
+    });
+
+}
+
 
 /* // need to update to node 15.11 for this
 const crypto = require('crypto');
@@ -432,6 +501,10 @@ function getTimeNow(secs) {
     return datenow
 }
 
+function getTimeStamp() {
+    return getDateNow()+"_"+getTimeNow()
+}
+
 function cloneOBJ(obj) { return JSON.parse(JSON.stringify(obj)) }
 
 let SAVE = {}
@@ -446,6 +519,15 @@ SAVE.config = function () {
     config.server = WS.config
     config.ls = lsconfig
     fs.writeFileSync(lsconfig.app_data_path + "config.json", JSON.stringify(config,null,4) ) //
+}
+
+SAVE.datastore = function (dsid){
+    // make the folder store folder path
+    let path = lsconfig.app_data_path + "data/"+ dsid + "/dates"
+    fs.mkdirSync( path, { recursive: true } )
+    // save store info
+    path = path.replace("dates", "store.json")
+    fs.writeFileSync(path, JSON.stringify(LSDATA[dsid].info,null,4) ) //
 }
 
 // this is a mirror of config.ls in main.js
@@ -688,9 +770,7 @@ function createDataStore(packet){
     let client_id = packet.client_id
     let username = WS.clients[client_id].username
     packet.username = username
-    let dsid = packet.uuid
-    let path = lsconfig.app_data_path + "data/"+ dsid + "/dates"
-    fs.mkdirSync( path, { recursive: true } )
+    let dsid = generateUUID()
 
     let info = {
         owner:username,
@@ -702,13 +782,7 @@ function createDataStore(packet){
         department:{},
         schedule:{} // this should be keyed to each user
     }
-    // setup some inital data
-    // maybe replace these with calls to the normal create functions
-    info.department[generateUUID()] = { name:"Home", sort:10 }
-    info.account[generateUUID()] = { name:"Cash", sort:10, type:"0" }
 
-    path = path.replace("dates", "store.json")
-    fs.writeFileSync(path, JSON.stringify(info,null,4) ) //
     LSDATA[dsid] = {
         info:cloneOBJ(info),
         dates:{}
@@ -716,21 +790,26 @@ function createDataStore(packet){
     LsDataStoreList.name.push(LSDATA[dsid].info.name)
     LsDataStoreList.id.push(dsid)
 
-    // send list update to roots and other clients of user
-    let list_item = { type:"ds_list_update", subtype:"add", name:LSDATA[dsid].info.name, id:dsid }
-    WS.sendToOtherClientsOfUser(client_id, list_item)
-    WS.sendToAllOtherRoots(client_id, list_item)
+    // setup some inital data
+    let create_item = { client_id: client_id, uuid:"new", name:"Home", notify:false , dsid:dsid }
+    updateDataStoreDepartment(create_item)
+    create_item.name = "Cash"
+    create_item.atype = "0"
+    //updateDataStoreAccount(create_item)
 
-    // update clients user perm & active datastore
-    //** this could maybe just be an array of uuids matching depts & accounts
-    LSUSER[username].perm[dsid] = {}
+    SAVE.datastore(dsid)
     LSUSER[username].lastUsedDataStore = dsid
-    //WS.clients[client_id].dsid
     SAVE.user(username)
-
-    // we should probobly just do client_init now so the new
-    // datastore can be set in the client
+    // we just do client_init now so the new
+    // datastore can be setup in the client
     clientInit(packet)
+
+    // send list update to roots and clients of user
+    let datastore_list_item = { type:"datastore_list_edit", subtype:"add", name:LSDATA[dsid].info.name, id:dsid }
+    WS.sendToOthers(client_id, datastore_list_item, { creator:"skip", perm:"skip" })
+
+
+
 
 }
 
@@ -750,12 +829,44 @@ function updateDataStoreDepartment(packet){
     let client_id = packet.client_id
     let username = WS.clients[client_id].username
     let dsid = WS.clients[client_id].dsid
+    if (packet.dsid) { dsid = packet.dsid } // this should only happen on new datastore creation
     if ( checkForCreator(username,dsid) === false ) {
-        // *** maybe send back a responce
+        // *** maybe send back a negative responce
         console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
+        packet.success = false
+        sendToClient(client_id, packet)
         return;
     }
     console.log(`LS: updateDataStoreDepartment `,packet);
+
+    // this will contain the modified item or be undefined if new item
+    let dsitem = packet.dsitem
+    if (packet.uuid === "new"){
+        packet.uuid = generateUUID()
+        dsitem = {
+            name:packet.name, uuid:packet.uuid , sort:0, active:true,
+            createdBy:username, createdAt:getTimeStamp()
+        }
+        packet.dsitem = dsitem
+    }
+    dsitem.lastChangedBy = username
+    dsitem.lastChangedAt = getTimeStamp()
+
+    packet.success = true
+    packet.dsid = dsid
+    // set the item, respond and save
+    console.log();
+    LSDATA[dsid].info.department[packet.uuid] = cloneOBJ(dsitem)
+
+    if (packet.notify && packet.notify === false){ return; }
+    // we will send an update to any clients with permissions on this datastore
+    // they will decide if they need it ( are they using this dsid)
+    WS.sendToAllClientsOfUser(client_id, packet)
+    WS.sendToAllOtherRoots(client_id, packet)
+    WS.sendToAllOtherCreators(client_id, dsid, packet)
+    SAVE.datastore(dsid)
+
+
 
 
 }
@@ -763,6 +874,7 @@ function updateDataStoreAccount(packet){
     let client_id = packet.client_id
     let username = WS.clients[client_id].username
     let dsid = WS.clients[client_id].dsid
+
     if ( checkForCreator(username,dsid) === false ) {
         // *** maybe send back a responce
         console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
@@ -770,11 +882,14 @@ function updateDataStoreAccount(packet){
     }
     console.log(`LS: updateDataStoreAccount `,packet);
 
+
+
 }
 function updateDataStoreCategory(packet){
     let client_id = packet.client_id
     let username = WS.clients[client_id].username
     let dsid = WS.clients[client_id].dsid
+
     if ( checkForCreator(username,dsid) === false ) {
         // *** maybe send back a responce
         console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
@@ -965,13 +1080,16 @@ let debug_matrix = {
     datastorelist:LsDataStoreList,
     lsuser:LSUSER,
     userlist:LsUserList,
-    config: { config:WS.config, lsconfig:lsconfig}
+    config: { config:WS.config, lsconfig:lsconfig},
+    wsclients:WS.clients
+
 }
 let debug_list = []
 for ( let item in debug_matrix){ debug_list.push(item) }
 
 function debugGetItem(packet) {
-    packet.item = debug_matrix[packet.name]
+    console.log("debugGetItem" , packet);
+    packet.item = JSON.stringify(debug_matrix[packet.name])
     WS.sendToClient(packet.client_id, packet)
 }
 

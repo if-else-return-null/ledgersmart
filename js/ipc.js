@@ -44,7 +44,9 @@ function handleIncomingMessage(data) {
     if (data.type === "client_init") {//*** more here to do
         console.log("client init from server");
         STATE.user = data.username
-        STATE.password = data.password
+        if (data.password) {
+            STATE.password = data.password
+        }
         STATE.last_user.value = data.username
         STATE.dsid = data.dsid
         STATE.isRoot = data.isRoot
@@ -98,7 +100,9 @@ function handleIncomingMessage(data) {
     if (data.type === "debug_info") {
         handleDebugInfoResponce(data)
     }
-
+    if (data.type === "datastore_list_edit") {
+        handleDataStoreListEdit(data)
+    }
     if (data.type === "datastore_update_department") {
         handleUpdateDataStoreDepartment(data)
     }
