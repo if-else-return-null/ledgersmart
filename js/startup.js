@@ -101,7 +101,11 @@ BYID("toggle_server_broadcast_user_btn").addEventListener('click', toggleServerB
 BYID("settings_user_remember_user").addEventListener('click', updateRememberSetting )
 BYID("settings_user_remember_password").addEventListener('click', updateRememberSetting )
 
-
+// edit modal listeners
+let edit_modal_buttons = document.getElementsByClassName("edit_modal_button");
+for (var i = 0; i < edit_modal_buttons.length; i++) {
+    edit_modal_buttons[i].addEventListener("click", clickEditModalButton);
+}
 
 
 

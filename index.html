@@ -9,6 +9,8 @@
     <title>LedgerSmart</title>
 </head>
 <body>
+
+<!-- TOP PANEL -->
     <div id="top_panel">
         <div  class="app_menus_cont">
             <div class="app_menu" id="app_menu_file" title="Menu">
@@ -35,6 +37,8 @@
             <div class="window_btn" id="win_close" title="Close">X</div>
         </div>
     </div>
+
+<!-- SIDE PANEL -->
     <div id="side_panel">
         <div class="main_tab_btn" id="main_tab_btn_overview">
             Overview
@@ -57,6 +61,8 @@
             </div>
         </div>
     </div>
+
+<!-- MAIN TAB OVERVIEW -->
     <div id="workarea">
         <div class="worktab" id="main_tab_overview">
             <div class="maintab_top_panel">
@@ -66,14 +72,20 @@
                 main overview tab
             </div>
         </div>
+
+<!-- MAIN TAB TRANSACTION -->
         <div class="worktab" id="main_tab_addedit">
             <div class="maintab_top_panel">
                 <h2>Transaction | </h2>
             </div>
             <div class="worktab_view" id="mt_view_addedit_main">
-                main Transaction tab
+                New Transaction<br>
+                Department <select class="" id="transaction_new_input_department"></select><br>
+
             </div>
         </div>
+
+<!-- MAIN TAB REPORTS -->
         <div class="worktab" id="main_tab_reports">
             <div class="maintab_top_panel">
                 <h2>Reports | </h2>
@@ -85,6 +97,7 @@
 
 
         </div>
+<!-- MAIN TAB SETTINGS -->
         <div class="worktab" id="main_tab_settings">
             <div class="maintab_top_panel">
                 <h2>Settings | </h2>
@@ -93,6 +106,8 @@
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_theme"> Theme </div>
                 <div class="maintab_top_panel_btn" id="mt_btn_settings_server"> Server </div>
             </div>
+
+            <!-- SETTINGS DATA -->
             <div class="worktab_view" id="mt_view_settings_data">
                 Data Settings
                 <hr>
@@ -116,7 +131,7 @@
                             Edit this data store
                             <input type="text" id="data_store_rename_name" placeholder="Rename Datastore" value="">&nbsp;&nbsp;
                             <h4 class="h_button" id="data_store_rename_name_button">Rename</h4>
-                            
+
                         </div>
                     </div>
                 </div>
@@ -131,7 +146,7 @@
 
                     <div class="data_items_list_edit" id="data_store_department_list_edit">
                         <h4 class="h_button list_edit_button" id="data_store_list_edit_button_department">List/Edit</h4>
-                        <div class="list_edit_table_area">
+                        <div class="list_edit_table_area" id="list_edit_table_area_department">
                             Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>
                         </div>
                     </div>
@@ -180,6 +195,8 @@
 
 
             </div>
+
+            <!-- SETTINGS USER -->
             <div class="worktab_view" id="mt_view_settings_user">
                 <div class="item_card" id="">
                     <input class="remember_checkbox" type="checkbox" id="settings_user_remember_user" value=""> Remember User <br>
@@ -188,6 +205,8 @@
                 </div>
 
             </div>
+
+            <!-- SETTINGS THEME -->
             <div class="worktab_view" id="mt_view_settings_theme">
                 Theme Settings<hr>
                 <div class="item_card">
@@ -207,6 +226,8 @@
 
 
             </div>
+
+            <!-- SETTINGS SERVER -->
             <div class="worktab_view" id="mt_view_settings_server">
                 Server Settings<hr>
                 SERVER<br>
@@ -222,17 +243,21 @@
             </div>
 
         </div>
+
         <div class="worktab" id="view_tab_tabid1">
-            view_tab_tabid1
+            example view_tab_tabid1
         </div>
         <div class="worktab" id="view_tab_tabid2">
-            view_tab_tabid2
+            example view_tab_tabid2
         </div>
     </div>
+
+<!-- MODAL DYNAMIC -->
     <div id="modal_cont">
         <div class="modal_tab" id="modal_dynamic">
             trying to connect
         </div>
+<!-- MODAL CONNECT LOST -->
         <div class="modal_tab" id="modal_connect_lost">
             <br><br>
             <h2>Could not connect to server</h2>
@@ -241,6 +266,7 @@
             <input type="checkbox" id="save_conn_changes" > Save Changes <br>
             <h3 class="h_button" id="reconnect_btn"> Retry Connection </h3>
         </div>
+<!-- MODAL USER LOGIN -->
         <div class="modal_tab" id="modal_user_login">
             <div id="modal_user_login_loading">
                 loading...
@@ -250,13 +276,7 @@
             <div id="login_user_list">
 
             </div>
-            <!--
-            <div id="login_user_list_password_area">
-                Password <input type="password" id="login_user_list_password_input" value="">
-                <h4 class="h_button" id="login_user_list_attempt_btn">Login</h4>
 
-            </div>
-        -->
             <div id="login_user_create">
 
                 <div id="login_user_create_infotext">
@@ -279,13 +299,30 @@
                 </span>
 
             </div>
-            <!--
-            <div id="login_user_remember">
-                <input class="remember_checkbox" type="checkbox" id="login_user_remember_user" value=""> Remember User |
-                <input class="remember_checkbox" type="checkbox" id="login_user_remember_password" value=""> Remember Password
-            </div>
-        -->
+
         </div>
+<!-- MODAL EDIT SCREEN -->
+        <div class="modal_tab" id="modal_edit_screen">
+            <div class="edit_modal_tab" id="edit_modal_tab_department">
+                Edit Department<hr>
+                <input type="hidden" id="em_department_id" value="">
+                <span class="input_warning" id="em_name_department_warning">&nbsp;</span><br>
+                Name &nbsp;&nbsp;<input type="text" id="em_department_name" value=""><br><br>
+                Sort &nbsp;&nbsp;<input type="number" id="em_department_sort" value=""><br><br>
+                Active &nbsp;&nbsp;<input type="checkbox" id="em_department_active" value=""><br><br>
+                Created by <span id="em_department_createdby"></span> on <span id="em_department_createdat"></span><br>
+                Last Edit by <span id="em_department_changedby"></span> on <span id="em_department_changedat"></span><br><br>
+                <h4 class="h_button edit_modal_button" id="em_button_department_save">Save</h4>&nbsp;&nbsp;
+                <h4 class="h_button edit_modal_button" id="em_button_department_cancel">Cancel</h4>
+                <span class="em_delete_area" id="em_delete_area_department">
+                    <hr>
+                    Delete this department <h4 class="h_button edit_modal_button" id="em_button_department_delete">Delete</h4>
+                </span>
+
+
+            </div>
+        </div>
+
     </div>
 
 

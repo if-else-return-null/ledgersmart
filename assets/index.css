@@ -29,6 +29,8 @@ a:link,a:visited,a:hover,a:active { color: #006699; text-decoration:none; }
 
 input[type=submit] {    border-radius:5px;  }
 
+select { font-family: Consolas, monospace; font-size: 100%; border-radius: 3px;}
+
 h2 { margin: 0; }
 
 .fltrt {float: right;}
@@ -39,13 +41,19 @@ h2 { margin: 0; }
 .medtext { font-size:150%;}
 .redtxt {color:red;}
 .input_warning {color:red; font-size:75%; }
+
 .item_card {
-    border:1px solid var(--alttxt1); border-radius: 3px; padding:10px;
+    border:1px solid var(--altbg1); border-radius: 3px; padding:10px;
     margin:10px; display: inline-table;
 }
 .item_card_full { width: 90%; margin-left: 4%;}
-.h_button { cursor: pointer; display: inline-block; padding: 10px; margin:10px;}
-.h_button:hover { text-decoration: underline; background: var(--altbg3);}
+
+.h_button {
+    cursor: pointer; display: inline-block; padding: 10px; margin:5px;
+    box-shadow: 5px 2.5px 2.5px var(--altbg2); border: .5px solid  var(--altbg2);
+    border-radius: 3px;
+}
+.h_button:hover { text-decoration: underline; color: var(--alttxt2); background: var(--altbg3);}
 #top_panel {
     position: absolute; width: 100%; height:var(--top_panel_height); top: 0px; left: 0px;
     overflow:auto; background: var(--altbg2); color: var(--alttxt2); user-select: none;
@@ -99,12 +107,12 @@ h2 { margin: 0; }
 
 #modal_cont {
     position: absolute; width: 100%; height: calc( 100% - var(--top_panel_height) );
-    top: var(--top_panel_height); left: 0px; overflow:auto;
+    top: var(--top_panel_height); left: 0px; overflow:none;
     background: var(--altbg3); color:var(--alttxt2); z-index: 100;
     display: none;
 }
 
-.modal_tab { display: none; width: 100%; min-height: 100%; text-align: center;}
+.modal_tab { display: none; width: 100%; height: 100%; text-align: center;  overflow:auto; }
 
 /*modal user_login*/
 #modal_user_login {background: var(--altbg1)}
@@ -147,3 +155,13 @@ h2 { margin: 0; }
 /*Settings edit data store  */
 
 .data_items_list_edit { width:100%; height:var(--list_edit_height); overflow:hidden; text-align: center;}
+.list_edit_table_area { width:100% }
+.item_card_clickable { cursor: pointer; box-shadow: 5px 2.5px 2.5px var(--altbg2); }
+.item_card_clickable:hover { box-shadow: 10px 5px 5px var(--altbg2);}
+
+/*-----------EDIT MODAL--------------*/
+.edit_modal_tab {
+    width:40%; height:50%; margin-left: 30%; margin-top: 20%; background: var(--altbg1);
+    display:
+}
+.em_delete_area {display: none;}

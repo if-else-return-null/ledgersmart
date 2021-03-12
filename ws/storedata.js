@@ -58,6 +58,28 @@ function checkForCreator(username,dsid) {
 }
 
 
+function deleteDataStoreItem(packet) {
+    let client_id = packet.client_id
+    let username = WS.clients[client_id].username
+    let dsid = WS.clients[client_id].dsid
+    if ( checkForCreator(username,dsid) === false ) {
+        // *** maybe send back a negative responce
+        packet.reason = `${username} is not a creator for ${LSDATA[dsid].info.name}`
+        console.log(packet.reason);
+        packet.success = false
+        sendToClient(client_id, packet)
+        return;
+    }
+    if (LSDATA[dsid].info[packet.itemtype][uuid].tcount !== 0) {
+        packet.reason = `Unable to delete ${packet.itemtype} ${LSDATA[dsid].info[packet.itemtype][uuid].name} is in use`
+        console.log(packet.reason);
+        packet.success = false
+        sendToClient(client_id, packet)
+        return;
+    }
+    // ok to delete
+}
+
 //-------account/category/department
 function updateDataStoreDepartment(packet){
     let client_id = packet.client_id
@@ -66,7 +88,7 @@ function updateDataStoreDepartment(packet){
     if (packet.dsid) { dsid = packet.dsid } // this should only happen on new datastore creation
     if ( checkForCreator(username,dsid) === false ) {
         // *** maybe send back a negative responce
-        console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
+        console.log(`${username} is not a creator for ${LSDATA[dsid].info.name}`);
         packet.success = false
         sendToClient(client_id, packet)
         return;
@@ -79,10 +101,11 @@ function updateDataStoreDepartment(packet){
         packet.uuid = generateUUID()
         dsitem = {
             name:packet.name, uuid:packet.uuid , sort:0, active:true,
-            createdBy:username, createdAt:getTimeStamp()
+            createdBy:username, createdAt:getTimeStamp(), tcount:0
         }
         packet.dsitem = dsitem
     }
+
     dsitem.lastChangedBy = username
     dsitem.lastChangedAt = getTimeStamp()
 

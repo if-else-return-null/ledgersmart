@@ -128,6 +128,9 @@ handle.wsClientMessage = function (client_id, packet){
     if (packet.type && packet.type === "datastore_update_category") {
         updateDataStoreCategory(packet)
     }
+    if (packet.type && packet.type === "datastore_delete_item") {
+        deleteDataStoreItem(packet)
+    }
 }
 
 

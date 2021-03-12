@@ -112,6 +112,9 @@ function handleIncomingMessage(data) {
     if (data.type === "datastore_update_category") {
         handleUpdateDataStoreCategory(data)
     }
+    if (data.type === "datastore_delete_item") {
+        handleDeleteDataStoreItem(data)
+    }
 }
 
 
