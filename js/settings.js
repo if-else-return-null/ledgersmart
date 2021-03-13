@@ -162,6 +162,8 @@ function setActiveDataStore(){
     console.log("setActiveDataStore", STATE.dsid);
     // departments
     updateDepartmentList()
+    updateAccountList()
+    updateCategoryList()
 
 }
 
@@ -204,9 +206,12 @@ function createDataStoreAccount() {
 }
 function createDataStoreCategory() {
     if (createOK() === false ) { return; }
-    let name = BYID("data_store_new_account_name").value
+    let name = BYID("data_store_new_category_name").value
     let cattype = document.querySelector('input[name="data_store_new_category_type"]:checked').value;
-    conn.send( JSON.stringify({type:"datastore_update_category", uuid:"new", name:name , ctype: cattype  }) )
+    let parent_id = null
+    let sub_check = BYID("data_store_new_category_parent_checkbox").checked
+    if (sub_check === true) { parent_id = BYID("data_store_new_category_parent").value  }
+    conn.send( JSON.stringify({type:"datastore_update_category", uuid:"new", name:name , ctype: cattype , parent: parent_id }) )
 }
 
 
@@ -224,17 +229,27 @@ function handleUpdateDataStoreDepartment(data) {
     }
 }
 function handleUpdateDataStoreAccount(data) {
-    if ( data.success === false ){
-
+    if ( data.success === true ){
+        if (data.dsid === STATE.dsid){
+            STATE.storeinfo.account[data.uuid] = cloneObj(data.dsitem)
+            updateAccountList()
+        } else {
+            console.log("handleUpdateDataStoreAccount not needed ", data);
+        }
     } else {
-
+        console.log("handleUpdateDataStoreAccount FAILED ", data);
     }
 }
 function handleUpdateDataStoreCategory(data) {
-    if ( data.success === false ){
-
+    if ( data.success === true ){
+        if (data.dsid === STATE.dsid){
+            STATE.storeinfo.category[data.uuid] = cloneObj(data.dsitem)
+            updateCategoryList()
+        } else {
+            console.log("handleUpdateDataStoreCategory not needed ", data);
+        }
     } else {
-
+        console.log("handleUpdateDataStoreCategory FAILED ", data);
     }
 }
 
@@ -245,11 +260,12 @@ let gui_temps = {}
 gui_temps.department_item_card = `
     <div class="item_card item_card_clickable icc_department" id="ds_edit_department_thisdept.id">
     thisdept.name <hr>
-    Sort: thisdept.sort | Active: thisdept.active<br>
+    Active: thisdept.active<br>
     Creator: thisdept.createdBy
     </div>
 
 `
+
 
 function updateDepartmentList() {
     BYID("data_store_new_department_name").value = ""
@@ -268,7 +284,7 @@ function updateDepartmentList() {
 
         let temp_html = gui_temps.department_item_card.replace(/thisdept.id/g , dept )
         temp_html = temp_html.replace(/thisdept.name/g, thisdept.name )
-        temp_html = temp_html.replace(/thisdept.sort/g, thisdept.sort )
+        //temp_html = temp_html.replace(/thisdept.sort/g, thisdept.sort )
         temp_html = temp_html.replace(/thisdept.active/g, thisdept.active )
         temp_html = temp_html.replace(/thisdept.createdBy/g, thisdept.createdBy )
         html_edit += temp_html
@@ -287,9 +303,132 @@ function updateDepartmentList() {
     BYID("transaction_new_input_department").innerHTML = html_sel_active
 }
 
+gui_temps.account_item_card = `
+    <div class="item_card item_card_clickable icc_account" id="ds_edit_account_thisacct.id">
+    thisacct.name <hr>
+    Active: thisacct.active<br>
+    Type: thisacct.atype
+    </div>
+
+`
+
+function updateAccountList() {
+    BYID("data_store_new_account_name").value = ""
+    let html_sel_active = "" // selector string
+    let html_sel_all = "" // selector string
+    let html_edit = "" // clickable item card
+
+    for (let acct in STATE.storeinfo.account) {
+        let thisacct = STATE.storeinfo.account[acct]
+        // select inputs
+        if (thisacct.active === true){
+            html_sel_active +=`<option value="${acct}" >${thisacct.name}</option> `
+        }
+        html_sel_all +=`<option value="${acct}" >${thisacct.name}</option> `
+        // list_edit item card
+
+        let temp_html = gui_temps.account_item_card.replace(/thisacct.id/g , acct )
+        temp_html = temp_html.replace(/thisacct.name/g, thisacct.name )
+        //temp_html = temp_html.replace(/thisacct.sort/g, thisacct.sort )
+        temp_html = temp_html.replace(/thisacct.active/g, thisacct.active )
+        temp_html = temp_html.replace(/thisacct.atype/g, STATE.typenames.account[thisacct.atype] )
+        //temp_html = temp_html.replace(/thisacct.createdBy/g, thisacct.createdBy )
+        html_edit += temp_html
 
 
-//-----------------------EDIT  account/category/department
+    }
+
+    BYID("list_edit_table_area_account").innerHTML = html_edit
+    // add edit listeners
+    let icc_account = document.getElementsByClassName("icc_account");
+    for (var i = 0; i < icc_account.length; i++) {
+        console.log("adding listener");
+        icc_account[i].addEventListener("click", clickItemCard);
+    }
+    // find and fill any html select elements
+    BYID("transaction_new_input_account").innerHTML = html_sel_active
+}
+
+gui_temps.category_item_card = `
+    <div class="item_card item_card_clickable icc_category parent.child" id="ds_edit_category_thiscat.id">
+    thiscat.name | Active: thiscat.active | Type: thiscat.ctype
+    </div>
+
+`
+
+function updateCategoryList() {
+    BYID("data_store_new_category_name").value = ""
+    BYID("data_store_new_category_parent_checkbox").checked = false
+    let html_sel_active = "" // selector string
+    let html_sel_all = "" // selector string
+    let html_sel_parent = "" // parent category selector string
+    let html_edit = "" // clickable item card
+    // build the sorty list
+    let sorty = { parent:[], child:{} }
+    for (let cat in STATE.storeinfo.category) {
+        let thiscat = STATE.storeinfo.category[cat]
+        if (thiscat.parent === null) {
+            sorty.parent.push(thiscat)
+            if ( !sorty.child[cat] ) { sorty.child[cat] = [] }
+        } else {
+            if ( !sorty.child[thiscat.parent] ) { sorty.child[thiscat.parent] = [] }
+            sorty.child[thiscat.parent].push(thiscat)
+        }
+    }
+    // do the sorting
+    sorty.parent.sort(function(a, b){
+        return a.sort == b.sort ? 0 : +(a.sort > b.sort) || -1;
+    });
+    for (let ch in sorty.child) {
+        sorty.child[ch].sort(function(a, b){
+            return a.sort == b.sort ? 0 : +(a.sort > b.sort) || -1;
+        });
+    }
+
+    // build html
+    sorty.parent.forEach((parent, i) => {
+        let pstr = `<option value="${parent.uuid}" >${parent.name}</option> `
+
+        html_sel_all += pstr
+        if (parent.active === true) {
+            html_sel_active  += pstr
+            html_sel_parent += pstr
+            let temp_html = gui_temps.category_item_card.replace(/thiscat.id/g , parent.uuid )
+            temp_html = temp_html.replace(/thiscat.name/g, parent.name )
+            temp_html = temp_html.replace(/thiscat.active/g, parent.active )
+            temp_html = temp_html.replace(/thiscat.ctype/g, STATE.typenames.category[parent.ctype] )
+            temp_html = temp_html.replace(/parent.child/g, "item_card_cat_parent" )
+            html_edit += temp_html
+        }
+        sorty.child[parent.uuid].forEach((child, ii) => {
+            let cstr = `<option class="category_child_option" value="${child.uuid}" >${child.name}</option> `
+            html_sel_all += cstr
+            if (parent.active === true && child.active === true) { html_sel_active  += cstr  }
+            let temp_html = gui_temps.category_item_card.replace(/thiscat.id/g , child.uuid )
+            temp_html = temp_html.replace(/thiscat.name/g, child.name )
+            temp_html = temp_html.replace(/thiscat.active/g, child.active )
+            temp_html = temp_html.replace(/thiscat.ctype/g, STATE.typenames.category[child.ctype] )
+            temp_html = temp_html.replace(/parent.child/g, "item_card_cat_child" )
+            html_edit += temp_html
+        });
+
+
+    });
+
+    BYID("list_edit_table_area_category").innerHTML = html_edit
+    // add edit listeners
+    let icc_category = document.getElementsByClassName("icc_category");
+    for (var i = 0; i < icc_category.length; i++) {
+        console.log("adding listener");
+        icc_category[i].addEventListener("click", clickItemCard);
+    }
+
+    // find and fill any html select elements
+    BYID("transaction_new_input_category").innerHTML = html_sel_active
+    BYID("data_store_new_category_parent").innerHTML = html_sel_parent
+}
+
+//-----------------------EDIT MODAL account/category/department
 
 function clickItemCard(event){
     let row_id
@@ -323,13 +462,49 @@ function clickItemCard(event){
             BYID(`em_delete_area_department`).style.display = "none"
         }
     }
+    if (type === "account"){
+
+        document.em_account_type_radio.em_account_type.value = STATE.storeinfo.account[id].atype;
+        BYID(`em_account_id`).value = id
+        BYID(`em_account_name`).value = STATE.storeinfo.account[id].name
+        BYID(`em_account_sort`).value = STATE.storeinfo.account[id].sort
+        BYID(`em_account_active`).checked = STATE.storeinfo.account[id].active
+        BYID(`em_account_createdby`).textContent = STATE.storeinfo.account[id].createdBy
+        BYID(`em_account_createdat`).textContent = STATE.storeinfo.account[id].createdAt
+        BYID(`em_account_changedby`).textContent = STATE.storeinfo.account[id].lastChangedBy
+        BYID(`em_account_changedat`).textContent = STATE.storeinfo.account[id].lastChangedAt
+        BYID("em_name_account_warning").innerHTML = ""
+        if (STATE.storeinfo.account[id].tcount === 0) {
+            BYID(`em_delete_area_account`).style.display = "block"
+        } else {
+            BYID(`em_delete_area_account`).style.display = "none"
+        }
+    }
+
+    if (type === "category"){
+
+        document.em_category_type_radio.em_category_type.value = STATE.storeinfo.category[id].ctype;
+        BYID(`em_category_id`).value = id
+        BYID(`em_category_name`).value = STATE.storeinfo.category[id].name
+        BYID(`em_category_sort`).value = STATE.storeinfo.category[id].sort
+        BYID(`em_category_active`).checked = STATE.storeinfo.category[id].active
+        BYID(`em_category_createdby`).textContent = STATE.storeinfo.category[id].createdBy
+        BYID(`em_category_createdat`).textContent = STATE.storeinfo.category[id].createdAt
+        BYID(`em_category_changedby`).textContent = STATE.storeinfo.category[id].lastChangedBy
+        BYID(`em_category_changedat`).textContent = STATE.storeinfo.category[id].lastChangedAt
+        BYID("em_name_category_warning").innerHTML = ""
+        if (STATE.storeinfo.category[id].tcount === 0) {
+            BYID(`em_delete_area_category`).style.display = "block"
+        } else {
+            BYID(`em_delete_area_category`).style.display = "none"
+        }
+    }
 
 
     showModal("modal_edit_screen")
 
 }
-
-//-------------------------------settings EDIT MODAL--------------------------------
+//----- attempt delete account/category/department
 function deleteDataStoreItem(type) {
     let uuid
     if (type === "department") {
@@ -341,16 +516,30 @@ function deleteDataStoreItem(type) {
     if (type === "category") {
         uuid = BYID("em_category_id").value
     }
+    STATE.view.wait_for_delete = true
     conn.send( JSON.stringify({type:"datastore_delete_item", uuid:uuid, itemtype:type }) )
 }
 
 function handleDeleteDataStoreItem(data){
     console.log("handleDeleteDataStoreItem" , data);
+    if (data.success === true) {
+        if (STATE.dsid === data.dsid) {
+            delete STATE.storeinfo[data.itemtype][data.uuid]
+            if (data.itemtype === "department") { updateDepartmentList()  }
+            if (data.itemtype === "account") { updateAccountList() }
+            if (data.itemtype === "category") { updateCategoryList() }
+        }
+
+    }
+    if ( STATE.view.wait_for_delete ) {
+        delete STATE.view.wait_for_delete
+        hideModal()
+    }
 }
 
-
+//--------------edit modal button actions
 function clickEditModalButton(event) {
-    let but_id
+    let but_id , dsitem
     if (typeof(event) === "string") { but_id = event }
     else { but_id = event.target.id }
     let split = but_id.split("_")
@@ -358,11 +547,21 @@ function clickEditModalButton(event) {
     let action = split[3]
     console.log("clickEditModalButton" , type, action);
     if (action === "cancel") {
+        STATE.confirm.delete_datastore_item = false
+        BYID(`em_button_${type}_delete`).innerHTML = "Delete"
         hideModal()
         return;
     }
     if (action === "delete") {
-        deleteDataStoreItem(type)
+        if (STATE.confirm.delete_datastore_item === true){
+            deleteDataStoreItem(type)
+            BYID(`em_button_${type}_delete`).innerHTML = "Delete"
+        } else {
+            //change to confirm
+            STATE.confirm.delete_datastore_item = true
+            BYID(`em_button_${type}_delete`).innerHTML = "Confirm Delete"
+        }
+
     }
     if (action === "save" && type === "department") {
         if (createOK() === false ) {
@@ -370,7 +569,7 @@ function clickEditModalButton(event) {
             return;
         }
         let dept_id = BYID("em_department_id").value
-        let dsitem = cloneObj(STATE.storeinfo.department[dept_id])
+        dsitem = cloneObj(STATE.storeinfo.department[dept_id])
         dsitem.name = BYID("em_department_name").value.trim()
         dsitem.sort = BYID("em_department_sort").value
         dsitem.active = BYID("em_department_active").checked
@@ -378,10 +577,33 @@ function clickEditModalButton(event) {
         hideModal()
     }
     if (action === "save" && type === "account") {
-        
+        if (createOK() === false ) {
+            BYID("em_name_account_warning").innerHTML = "Action not permitted"
+            return;
+        }
+        let acct_id = BYID("em_account_id").value
+        dsitem = cloneObj(STATE.storeinfo.account[acct_id])
+        dsitem.name = BYID("em_account_name").value.trim()
+        dsitem.sort = BYID("em_account_sort").value
+        dsitem.active = BYID("em_account_active").checked
+        dsitem.atype = document.querySelector('input[name="em_account_type"]:checked').value;
+        conn.send( JSON.stringify({type:"datastore_update_account", uuid:acct_id, dsitem:dsitem }) )
+        hideModal()
+
     }
     if (action === "save" && type === "category") {
-
+        if (createOK() === false ) {
+            BYID("em_name_category_warning").innerHTML = "Action not permitted"
+            return;
+        }
+        let cat_id = BYID("em_category_id").value
+        dsitem = cloneObj(STATE.storeinfo.category[cat_id])
+        dsitem.name = BYID("em_category_name").value.trim()
+        dsitem.sort = BYID("em_category_sort").value
+        dsitem.active = BYID("em_category_active").checked
+        dsitem.acype = document.querySelector('input[name="em_category_type"]:checked').value;
+        conn.send( JSON.stringify({type:"datastore_update_category", uuid:cat_id, dsitem:dsitem }) )
+        hideModal()
     }
 }
 

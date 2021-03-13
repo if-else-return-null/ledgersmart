@@ -24,12 +24,12 @@ function createDataStore(packet){
     LsDataStoreList.name.push(LSDATA[dsid].info.name)
     LsDataStoreList.id.push(dsid)
 
-    // setup some inital data
+    // setup inital department and account
     let create_item = { client_id: client_id, uuid:"new", name:"Home", notify:false , dsid:dsid }
     updateDataStoreDepartment(create_item)
     create_item.name = "Cash"
     create_item.atype = "0"
-    //updateDataStoreAccount(create_item)
+    updateDataStoreAccount(create_item)
 
     SAVE.datastore(dsid)
     LSUSER[username].lastUsedDataStore = dsid
@@ -57,27 +57,35 @@ function checkForCreator(username,dsid) {
     return ok
 }
 
-
+// this will rely on keeping accurate tcounts when inputing/updating transactions
 function deleteDataStoreItem(packet) {
     let client_id = packet.client_id
     let username = WS.clients[client_id].username
     let dsid = WS.clients[client_id].dsid
+    let uuid = packet.uuid
     if ( checkForCreator(username,dsid) === false ) {
         // *** maybe send back a negative responce
         packet.reason = `${username} is not a creator for ${LSDATA[dsid].info.name}`
         console.log(packet.reason);
         packet.success = false
-        sendToClient(client_id, packet)
+        WS.sendToClient(client_id, packet)
         return;
     }
     if (LSDATA[dsid].info[packet.itemtype][uuid].tcount !== 0) {
         packet.reason = `Unable to delete ${packet.itemtype} ${LSDATA[dsid].info[packet.itemtype][uuid].name} is in use`
         console.log(packet.reason);
         packet.success = false
-        sendToClient(client_id, packet)
+        WS.sendToClient(client_id, packet)
         return;
     }
     // ok to delete
+    packet.success = true
+    packet.dsid = dsid
+    console.log(`LS: Deleting ${packet.itemtype} - ${LSDATA[dsid].info[packet.itemtype][uuid].name}`);
+    delete LSDATA[dsid].info[packet.itemtype][uuid]
+    WS.sendToClient(client_id, packet)
+    WS.sendToOthers(client_id, packet, {permid:uuid} )
+
 }
 
 //-------account/category/department
@@ -90,7 +98,7 @@ function updateDataStoreDepartment(packet){
         // *** maybe send back a negative responce
         console.log(`${username} is not a creator for ${LSDATA[dsid].info.name}`);
         packet.success = false
-        sendToClient(client_id, packet)
+        WS.sendToClient(client_id, packet)
         return;
     }
     console.log(`LS: updateDataStoreDepartment `,packet);
@@ -116,28 +124,57 @@ function updateDataStoreDepartment(packet){
     LSDATA[dsid].info.department[packet.uuid] = cloneOBJ(dsitem)
 
     if (packet.notify && packet.notify === false){ return; }
-    // we will send an update to any clients with permissions on this datastore
-    // they will decide if they need it ( are they using this dsid)
-    WS.sendToAllClientsOfUser(client_id, packet)
-    WS.sendToAllOtherRoots(client_id, packet)
-    WS.sendToAllOtherCreators(client_id, dsid, packet)
+    // we will send an update to roots , creators and ourselves
+    // there will be no other permissions on this item yet
+    WS.sendToClient(client_id, packet)
+    WS.sendToOthers(client_id, packet, {perm:"skip"} )
+
     SAVE.datastore(dsid)
 
 
 
 
 }
+
 function updateDataStoreAccount(packet){
     let client_id = packet.client_id
     let username = WS.clients[client_id].username
     let dsid = WS.clients[client_id].dsid
-
+    if (packet.dsid) { dsid = packet.dsid } // this should only happen on new datastore creation
     if ( checkForCreator(username,dsid) === false ) {
-        // *** maybe send back a responce
-        console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
+        // *** maybe send back a negative responce
+        console.log(`${username} is not a creator for ${LSDATA[dsid].info.name}`);
+        packet.success = false
+        WS.sendToClient(client_id, packet)
         return;
     }
     console.log(`LS: updateDataStoreAccount `,packet);
+    // this will contain the modified item or be undefined if new item
+    let dsitem = packet.dsitem
+    if (packet.uuid === "new"){
+        packet.uuid = generateUUID()
+        dsitem = {
+            name:packet.name, uuid:packet.uuid , sort:0, active:true,
+            atype:packet.atype, createdBy:username, createdAt:getTimeStamp(), tcount:0
+        }
+        packet.dsitem = dsitem
+    }
+
+    dsitem.lastChangedBy = username
+    dsitem.lastChangedAt = getTimeStamp()
+
+
+    packet.success = true
+    packet.dsid = dsid
+    // set the item, respond and save
+
+    LSDATA[dsid].info.account[packet.uuid] = cloneOBJ(dsitem)
+    if (packet.notify && packet.notify === false){ return; }
+    // we will send an update to roots , creators and ourselves
+    // there will be no other permissions on this item yet
+    WS.sendToClient(client_id, packet)
+    WS.sendToOthers(client_id, packet, {perm:"skip"} )
+    SAVE.datastore(dsid)
 
 
 
@@ -146,11 +183,41 @@ function updateDataStoreCategory(packet){
     let client_id = packet.client_id
     let username = WS.clients[client_id].username
     let dsid = WS.clients[client_id].dsid
-
+    if (packet.dsid) { dsid = packet.dsid } // this should only happen on new datastore creation
     if ( checkForCreator(username,dsid) === false ) {
-        // *** maybe send back a responce
-        console.log(`${username} id not a creator for ${LSDATA[dsid].info.name}`);
+        // *** maybe send back a negative responce
+        console.log(`${username} is not a creator for ${LSDATA[dsid].info.name}`);
+        packet.success = false
+        WS.sendToClient(client_id, packet)
         return;
     }
     console.log(`LS: updateDataStoreCategory `,packet);
+    let dsitem = packet.dsitem
+    if (packet.uuid === "new"){
+        packet.uuid = generateUUID()
+        dsitem = {
+            name:packet.name, uuid:packet.uuid , sort:0, active:true,
+            ctype:packet.ctype, parent:packet.parent,
+            createdBy:username, createdAt:getTimeStamp(), tcount:0
+        }
+        packet.dsitem = dsitem
+    }
+
+    dsitem.lastChangedBy = username
+    dsitem.lastChangedAt = getTimeStamp()
+
+    packet.success = true
+    packet.dsid = dsid
+    // set the item, respond and save
+
+    LSDATA[dsid].info.category[packet.uuid] = cloneOBJ(dsitem)
+    if (packet.notify && packet.notify === false){ return; }
+
+    // we will send an update to anyone who has permission on this datastore
+    WS.sendToClient(client_id, packet)
+    WS.sendToOthers(client_id, packet, { permid:dsid } )
+    SAVE.datastore(dsid)
+
+
+
 }

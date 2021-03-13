@@ -131,6 +131,9 @@ handle.wsClientMessage = function (client_id, packet){
     if (packet.type && packet.type === "datastore_delete_item") {
         deleteDataStoreItem(packet)
     }
+    if (packet.type && packet.type === "datastore_update_transaction") {
+        updateDataStoreTransaction(packet)
+    }
 }
 
 

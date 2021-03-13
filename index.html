@@ -81,6 +81,8 @@
             <div class="worktab_view" id="mt_view_addedit_main">
                 New Transaction<br>
                 Department <select class="" id="transaction_new_input_department"></select><br>
+                Account <select class="" id="transaction_new_input_account"></select><br>
+                Category <select class="" id="transaction_new_input_category"></select><br>
 
             </div>
         </div>
@@ -146,9 +148,7 @@
 
                     <div class="data_items_list_edit" id="data_store_department_list_edit">
                         <h4 class="h_button list_edit_button" id="data_store_list_edit_button_department">List/Edit</h4>
-                        <div class="list_edit_table_area" id="list_edit_table_area_department">
-                            Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>
-                        </div>
+                        <div class="list_edit_table_area" id="list_edit_table_area_department"> </div>
                     </div>
                 </div>
                 <div class="item_card item_card_full" id="">
@@ -164,9 +164,7 @@
 
                     <div class="data_items_list_edit" id="data_store_account_list_edit">
                         <h4 class="h_button list_edit_button" id="data_store_list_edit_button_account">List/Edit</h4>
-                        <div class="list_edit_table_area">
-                            Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>
-                        </div>
+                        <div class="list_edit_table_area" id="list_edit_table_area_account"> </div>
                     </div>
 
                 </div>
@@ -181,13 +179,14 @@
                     <input type="radio" name="data_store_new_category_type" value="1">Expence</input> <span class="smtext">(Bills, Payments)</span> <br>
                     <input type="radio" name="data_store_new_category_type" value="2">Transfer</input> <span class="smtext">(Funds Moved between Accounts)</span> <br>
                     <input type="radio" name="data_store_new_category_type" value="3">N/A</input> <span class="smtext">(Excluded from all Profit and Loss)</span> <br>
+                    <br>
+                    <input type="checkbox" id="data_store_new_category_parent_checkbox">
+                    Sub-category of &nbsp;&nbsp;<select id="data_store_new_category_parent"> </select><br>
                     <h4 class="h_button" id="data_store_new_category_create_button">Create</h4>
 
                     <div class="data_items_list_edit" id="data_store_category_list_edit">
                         <h4 class="h_button list_edit_button" id="data_store_list_edit_button_category">List/Edit</h4>
-                        <div class="list_edit_table_area">
-                            Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>Create New Data Store<hr>
-                        </div>
+                        <div class="list_edit_table_area" id="list_edit_table_area_category"></div>
                     </div>
 
                 </div>
@@ -317,6 +316,62 @@
                 <span class="em_delete_area" id="em_delete_area_department">
                     <hr>
                     Delete this department <h4 class="h_button edit_modal_button" id="em_button_department_delete">Delete</h4>
+                </span>
+
+
+            </div>
+
+            <div class="edit_modal_tab" id="edit_modal_tab_account">
+                Edit Account<hr>
+                <input type="hidden" id="em_account_id" value="">
+                <span class="input_warning" id="em_name_account_warning">&nbsp;</span><br>
+                Name &nbsp;&nbsp;<input type="text" id="em_account_name" value=""><br><br>
+                Sort &nbsp;&nbsp;<input type="number" id="em_account_sort" value=""><br><br>
+                Active &nbsp;&nbsp;<input type="checkbox" id="em_account_active" value=""><br><br>
+                <form name="em_account_type_radio">
+                    <input type="radio" name="em_account_type" value="0">Liquid Asset</input><br>
+                    <input type="radio" name="em_account_type" value="1">Liability</input><br>
+                    <input type="radio" name="em_account_type" value="2">Fixed Asset</input> <br>
+                    <input type="radio" name="em_account_type" value="3">Inventory</input> <br>
+                </form><br>
+                <span class="smtext">
+                    Created by <span id="em_account_createdby"></span> on <span id="em_account_createdat"></span><br>
+                    Last Edit by <span id="em_account_changedby"></span> on <span id="em_account_changedat"></span>
+                </span><br><br>
+
+                <h4 class="h_button edit_modal_button" id="em_button_account_save">Save</h4>&nbsp;&nbsp;
+                <h4 class="h_button edit_modal_button" id="em_button_account_cancel">Cancel</h4>
+                <span class="em_delete_area" id="em_delete_area_account">
+                    <hr>
+                    Delete this account <h4 class="h_button edit_modal_button" id="em_button_account_delete">Delete</h4>
+                </span>
+
+
+            </div>
+
+            <div class="edit_modal_tab" id="edit_modal_tab_category">
+                Edit Category<hr>
+                <input type="hidden" id="em_category_id" value="">
+                <span class="input_warning" id="em_name_category_warning">&nbsp;</span><br>
+                Name &nbsp;&nbsp;<input type="text" id="em_category_name" value=""><br><br>
+                Sort &nbsp;&nbsp;<input type="number" id="em_category_sort" value=""><br><br>
+                Active &nbsp;&nbsp;<input type="checkbox" id="em_category_active" value=""><br><br>
+                <form name="em_category_type_radio">
+                    <input type="radio" name="em_category_type" value="0">Income</input><br>
+                    <input type="radio" name="em_category_type" value="1">Expence</input><br>
+                    <input type="radio" name="em_category_type" value="2">Transfer</input> <br>
+                    <input type="radio" name="em_category_type" value="3">N/A</input> <br>
+                </form><br>
+                <span class="smtext">
+                    Created by <span id="em_category_createdby"></span> on <span id="em_category_createdat"></span><br>
+                    Last Edit by <span id="em_category_changedby"></span> on <span id="em_category_changedat"></span>
+                </span><br><br>
+
+                <h4 class="h_button edit_modal_button" id="em_button_category_save">Save</h4>&nbsp;&nbsp;
+                <h4 class="h_button edit_modal_button" id="em_button_category_cancel">Cancel</h4>
+                <span class="em_delete_area" id="em_delete_area_category">
+                    <hr>
+                    Delete this category <h4 class="h_button edit_modal_button" id="em_button_category_delete">Delete</h4>
                 </span>
 
 

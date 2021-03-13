@@ -76,6 +76,10 @@ function createUserAccount(packet) {
         username:username,
         password:packet.password,
         isRoot:false,
+        // perm contains an arrays for each datastore the user has
+        // permmision on keyed to it's dsid. The arrays contain
+        // uuid"s of any department or account the user has permission on. The
+        // dsid itself should also be in its respective array
         perm:{},
         lastUsedDataStore:null
     }
@@ -119,5 +123,52 @@ function changeActiveDataStore(packet) {
     packet.username = WS.clients[client_id].username
     console.log("LS: Change active data store ");
     clientInit(packet)
+
+}
+
+//----------------Permissions---------------------
+
+function givePermissionToUser(packet) {
+    let client_id = packet.client_id
+    let username = WS.clients[client_id].username
+    let dsid = WS.clients[client_id].dsid
+    let perm_user = packet.perm_user
+    let perm_ids = packet.perm_ids //[]
+    // add permission to a datastore
+    if (!LSUSER[permuser]) {
+        packet.reason = `${perm_user} is not a valid username`
+        packet.success = false
+        console.log(packet.reason);
+        WS.sendToClient(client_id, packet)
+        return;
+    }
+    if ( checkForCreator(username,dsid) === false ) {
+        packet.reason = `${username} is not a creator for ${LSDATA[dsid].info.name}`
+        packet.success = false
+        console.log(packet.reason);
+        WS.sendToClient(client_id, packet)
+        return;
+    }
+    // check to see if we are fully revoking permissions
+    if (perm_ids === null) {
+        delete LSUSER[permuser].perm[dsid]
+        packet.reason = `${username}'s permissions on ${LSDATA[dsid].info.name} have been revoked`
+        packet.success = true
+    } else {
+        // ok good to add permissions
+        // first reset the permission array
+        LSUSER[permuser].perm[dsid] = [dsid]
+        // now add the given uuid
+        perm_ids.forEach((item, i) => {
+            LSUSER[permuser].perm[dsid].push(item)
+        });
+        packet.reason = `${username}'s permissions on ${LSDATA[dsid].info.name} have been updated`
+        packet.success = true
+    }
+    console.log(packet.reason);
+    WS.sendToClient(client_id, packet)
+    WS.sendToOthers(client_id, packet, {perm:"skip"} )
+    SAVE.user(perm_user)
+
 
 }

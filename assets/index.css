@@ -31,6 +31,8 @@ input[type=submit] {    border-radius:5px;  }
 
 select { font-family: Consolas, monospace; font-size: 100%; border-radius: 3px;}
 
+.category_child_option { font-size: 80%; }
+
 h2 { margin: 0; }
 
 .fltrt {float: right;}
@@ -158,10 +160,12 @@ h2 { margin: 0; }
 .list_edit_table_area { width:100% }
 .item_card_clickable { cursor: pointer; box-shadow: 5px 2.5px 2.5px var(--altbg2); }
 .item_card_clickable:hover { box-shadow: 10px 5px 5px var(--altbg2);}
+.item_card_cat_parent { width:90%; margin-left: 5%; text-align: left;}
+.item_card_cat_child { width: 70%; margin-left: 15%; text-align: left;}
 
 /*-----------EDIT MODAL--------------*/
 .edit_modal_tab {
-    width:40%; height:50%; margin-left: 30%; margin-top: 20%; background: var(--altbg1);
+    width:40%; min-height:50%; margin-left: 30%; margin-top: 20%; background: var(--altbg1);
     display:
 }
 .em_delete_area {display: none;}

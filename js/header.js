@@ -24,7 +24,11 @@ STATE.autologin = null
 STATE.last_user = {value:null}
 STATE.local_users = {list:[], info:{} }
 STATE.view = {}
-
+STATE.confirm = {}
+STATE.typenames = {
+    account:{"0":"Liquid Asset", "1":"Liability", "2":"Fixed Asset", "3":"Inventory"},
+    category:{"0":"Income", "1":"Expence", "2":"Transfer", "3":"N/A"}
+}
 //------------------------ws server connection---------------------------------
 function tryConnect() {
     showModal("modal_dynamic", "<h2>Connecting to server</h2>")
