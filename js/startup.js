@@ -1,6 +1,6 @@
 
 BYID("main_tab_btn_overview").addEventListener('click', showMainWorkarea )
-BYID("main_tab_btn_addedit").addEventListener('click', showMainWorkarea )
+BYID("main_tab_btn_transaction").addEventListener('click', showMainWorkarea )
 BYID("main_tab_btn_reports").addEventListener('click', showMainWorkarea )
 BYID("main_tab_btn_settings").addEventListener('click', showMainWorkarea )
 
@@ -107,7 +107,15 @@ for (var i = 0; i < edit_modal_buttons.length; i++) {
     edit_modal_buttons[i].addEventListener("click", clickEditModalButton);
 }
 
+// new transaction listeners
 
+let transaction_new_tag_btns = document.getElementsByClassName("transaction_new_tag_btns");
+for (var i = 0; i < transaction_new_tag_btns.length; i++) {
+    transaction_new_tag_btns[i].addEventListener("click", clickTransactionSetTag);
+}
+BYID("transaction_new_amount_change_sign").addEventListener("click", transactionChangeSign);
+BYID("transaction_new_button_post").addEventListener("click", postNewTransaction);
+BYID("transaction_new_button_clear").addEventListener("click", clearTrasactionForm);
 
 window.addEventListener('contextmenu', (event) => {
       //event.preventDefault();
@@ -150,7 +158,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // display initial wotktab views
     switchTabs("main_tab_btn_overview", "main_tab_overview")
     clickWorkTabButton("mt_btn_overview_main")
-    clickWorkTabButton("mt_btn_addedit_main")
+    clickWorkTabButton("mt_btn_transaction_income")
     clickWorkTabButton("mt_btn_reports_main")
     clickWorkTabButton("mt_btn_settings_data")
     checkLocalStorage()

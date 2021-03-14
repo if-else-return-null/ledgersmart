@@ -43,7 +43,7 @@
         <div class="main_tab_btn" id="main_tab_btn_overview">
             Overview
         </div>
-        <div class="main_tab_btn" id="main_tab_btn_addedit">
+        <div class="main_tab_btn" id="main_tab_btn_transaction">
             Transaction
         </div>
         <div class="main_tab_btn" id="main_tab_btn_reports">
@@ -74,17 +74,48 @@
         </div>
 
 <!-- MAIN TAB TRANSACTION -->
-        <div class="worktab" id="main_tab_addedit">
+        <div class="worktab" id="main_tab_transaction">
             <div class="maintab_top_panel">
                 <h2>Transaction | </h2>
+                <div class="maintab_top_panel_btn" id="mt_btn_transaction_income"> Income </div>
+                <div class="maintab_top_panel_btn" id="mt_btn_transaction_expence"> Expence </div>
+                <div class="maintab_top_panel_btn" id="mt_btn_transaction_transfer"> Transfer </div>
+                <div class="maintab_top_panel_btn" id="mt_btn_transaction_search"> Search </div>
             </div>
-            <div class="worktab_view" id="mt_view_addedit_main">
-                New Transaction<br>
-                Department <select class="" id="transaction_new_input_department"></select><br>
-                Account <select class="" id="transaction_new_input_account"></select><br>
-                Category <select class="" id="transaction_new_input_category"></select><br>
+            <div class="worktab_view" id="mt_view_transaction_input">
+                <form name="transaction_new">
 
+
+                Income Transaction<br>
+                Department <select class="" id="transaction_new_input_department"></select><br>
+                Date <input type="date" id="transaction_new_input_date" value=""><br>
+                Payee <input type="text" id="transaction_new_input_payee" value=""><br>
+                <span id="transaction_new_aa_area_default">
+                    Account <select class="" id="transaction_new_input_account"></select><br>
+                    Amount <input type="number" min="0" step=".01" id="transaction_new_input_amount" value="">&nbsp;&nbsp;
+                    <button type="button" id="transaction_new_amount_change_sign">+/-</button> <br>
+                </span>
+                <span id="transaction_new_aa_area_transfer">
+                    From Account <select class="" id="transaction_new_input_from_account"></select><br>
+                    To Account <select class="" id="transaction_new_input_to_account"></select><br>
+                    Amount <input type="number" step=".01" id="transaction_new_input_transfer_amount" value="">&nbsp;&nbsp;
+
+                </span>
+
+                Category <select class="" id="transaction_new_input_category"></select><br>
+                Tag <input type="text" id="transaction_new_input_tag" value="">&nbsp;&nbsp;
+                <button type="button" class="transaction_new_tag_btns" id="transaction_set_tag_check">Check</button>
+                <button type="button" class="transaction_new_tag_btns" id="transaction_set_tag_card">Card</button>
+                <button type="button" class="transaction_new_tag_btns" id="transaction_set_tag_atm">ATM</button>
+                <button type="button" class="transaction_new_tag_btns" id="transaction_set_tag_ach">ACH</button>
+                <br>
+                Memo <textarea id="transaction_new_input_memo" rows="4" cols="30"></textarea> <br>
+                <hr>
+                <h4 class="h_button" id="transaction_new_button_post">Post Transaction</h4>
+                <h4 class="h_button" id="transaction_new_button_clear">Clear Form</h4>
+                </form>
             </div>
+
         </div>
 
 <!-- MAIN TAB REPORTS -->
@@ -393,6 +424,7 @@
     <script src="./js/views.js"></script>
     <script src="./js/users.js"></script>
     <script src="./js/settings.js"></script>
+    <script src="./js/transactions.js"></script>
     <script src="./js/startup.js"></script>
 </body>
 </html>

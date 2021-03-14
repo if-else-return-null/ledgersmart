@@ -162,24 +162,40 @@ function clickWorkTabButton(event) {
 
 //
 function workTabActions(info) {
-    function clearViews(tabname){ // hide all of this worktabs views
+    function clearViews(tabname,active){ // hide all of this worktabs views
         let views = BYID("main_tab_"+tabname).getElementsByClassName("worktab_view");
-        for (var i = 0; i < views.length; i++) {
+        for (let i = 0; i < views.length; i++) {
             views[i].style.display = "none"
+        }
+    }
+    function setButtons(tabname,active){
+        let btns = BYID("main_tab_"+tabname).getElementsByClassName("maintab_top_panel_btn");
+        for (let i = 0; i < btns.length; i++) {
+            btns[i].classList.remove("selected")
+        }
+        if (BYID(`mt_btn_${info[0]}_${info[1]}`)) {
+            BYID(`mt_btn_${info[0]}_${info[1]}`).classList.add("selected")
         }
     }
     //*** the actions below will likely change as the code progresses
     if (info[0] === "settings"){
-        clearViews(info[0])
+        clearViews(info[0],info[1])
+        setButtons(info[0],info[1])
         BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
     }
     if (info[0] === "overview"){
         clearViews(info[0])
         BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
     }
-    if (info[0] === "addedit"){
-        clearViews(info[0])
-        BYID("mt_view_"+info[0]+"_"+info[1]).style.display = "block"
+    if (info[0] === "transaction"){
+        if (info[1] === "search") {
+            // open a search new tab
+        } else {
+            setButtons(info[0],info[1])
+            BYID("mt_view_transaction_input").style.display = "block"
+            setupTransactionForm(info[1])
+        }
+
     }
     if (info[0] === "reports"){
         clearViews(info[0])

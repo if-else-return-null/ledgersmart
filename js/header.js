@@ -29,6 +29,7 @@ STATE.typenames = {
     account:{"0":"Liquid Asset", "1":"Liability", "2":"Fixed Asset", "3":"Inventory"},
     category:{"0":"Income", "1":"Expence", "2":"Transfer", "3":"N/A"}
 }
+STATE.transaction_sign = true
 //------------------------ws server connection---------------------------------
 function tryConnect() {
     showModal("modal_dynamic", "<h2>Connecting to server</h2>")
@@ -89,11 +90,10 @@ function handleConnectLost() {
 
 }
 
-//**** maybe do this with login ***NOT IN USE
-function sendInitRequestToServer(){
-    let datastore = null
-    if (localStorage.getItem("datastore_id")) {
-        datastore = localStorage.getItem("datastore_id")
-    }
-    conn.send( JSON.stringify({type:"client_init", datastore_id:datastore }) )
+function getDateNow(secs) {
+    let d
+    if (secs === undefined) { d = new Date() } else { d = new Date(secs) }
+
+    let datenow  = [  d.getFullYear(),  ('0' + (d.getMonth() + 1)).slice(-2),  ('0' + d.getDate()).slice(-2)].join('-');
+    return datenow
 }

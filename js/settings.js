@@ -347,6 +347,8 @@ function updateAccountList() {
     }
     // find and fill any html select elements
     BYID("transaction_new_input_account").innerHTML = html_sel_active
+    BYID("transaction_new_input_from_account").innerHTML = html_sel_active
+    BYID("transaction_new_input_to_account").innerHTML = html_sel_active
 }
 
 gui_temps.category_item_card = `
@@ -359,7 +361,7 @@ gui_temps.category_item_card = `
 function updateCategoryList() {
     BYID("data_store_new_category_name").value = ""
     BYID("data_store_new_category_parent_checkbox").checked = false
-    let html_sel_active = "" // selector string
+    let html_sel_active ={"0":"","1":"","2":"","3":""} //"" // selector string
     let html_sel_all = "" // selector string
     let html_sel_parent = "" // parent category selector string
     let html_edit = "" // clickable item card
@@ -391,7 +393,7 @@ function updateCategoryList() {
 
         html_sel_all += pstr
         if (parent.active === true) {
-            html_sel_active  += pstr
+            html_sel_active[parent.ctype]  += pstr
             html_sel_parent += pstr
             let temp_html = gui_temps.category_item_card.replace(/thiscat.id/g , parent.uuid )
             temp_html = temp_html.replace(/thiscat.name/g, parent.name )
@@ -403,7 +405,7 @@ function updateCategoryList() {
         sorty.child[parent.uuid].forEach((child, ii) => {
             let cstr = `<option class="category_child_option" value="${child.uuid}" >${child.name}</option> `
             html_sel_all += cstr
-            if (parent.active === true && child.active === true) { html_sel_active  += cstr  }
+            if (parent.active === true && child.active === true) { html_sel_active[parent.ctype]  += cstr  }
             let temp_html = gui_temps.category_item_card.replace(/thiscat.id/g , child.uuid )
             temp_html = temp_html.replace(/thiscat.name/g, child.name )
             temp_html = temp_html.replace(/thiscat.active/g, child.active )
@@ -424,7 +426,10 @@ function updateCategoryList() {
     }
 
     // find and fill any html select elements
-    BYID("transaction_new_input_category").innerHTML = html_sel_active
+    STATE.view.cat_options_income = html_sel_active["0"] + html_sel_active["3"]
+    STATE.view.cat_options_expence = html_sel_active["1"] + html_sel_active["3"]
+    STATE.view.cat_options_transfer = html_sel_active["2"]
+    BYID("transaction_new_input_category").innerHTML = STATE.view.cat_options_income
     BYID("data_store_new_category_parent").innerHTML = html_sel_parent
 }
 

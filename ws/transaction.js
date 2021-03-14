@@ -11,12 +11,13 @@ let transaction_dsitem = {
     account:"account_id",
     category:"category_id",
     amount:1.25, // signed floating point value.
-    number:"check#/ATM/DEBIT", // a string denoting somthing about the transaction
+    tag:"check#/ATM/DEBIT", // a string denoting somthing about the transaction
     memo:"arbitray memo", // a string however you like it
     createdBy:"username",
     createdAt:"getTimeStamp()",
     lastChangedBy:"username",
     lastChangedAt: "getTimeStamp()",
+    split_ids:[], // an array of transaction in a split group
     links:[], //??? array of links to relevent files or web locations
     files:[] //??? array of link to files stored on the server for this transaction
 }

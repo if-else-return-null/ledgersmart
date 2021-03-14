@@ -7,6 +7,8 @@
   --maintxt1: #020622;
   --alttxt1: #97c3a2;
   --alttxt2: #FFFFFF;
+  --postext: green;
+  --negtext: red;
   --top_panel_height: 30px;
   --side_panel_width: 20%;
   --workarea_width: 80%;
@@ -102,6 +104,7 @@ h2 { margin: 0; }
     cursor: pointer;
 }
 .maintab_top_panel .maintab_top_panel_btn:hover {  background: var(--altbg2); color: var(--alttxt2); }
+.maintab_top_panel .selected {  background: var(--altbg2); color: var(--alttxt2); }
 .worktab_view {
     width:100%; height: calc(100% - var(--maintab_top_panel_height) ); overflow:auto;
     display:none;
@@ -169,3 +172,9 @@ h2 { margin: 0; }
     display:
 }
 .em_delete_area {display: none;}
+
+
+
+/* -------------- NEW TRANSACTIONS----------------------*/
+
+#transaction_new_aa_area_transfer { display: none;}
