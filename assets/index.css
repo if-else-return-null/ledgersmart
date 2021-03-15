@@ -178,3 +178,4 @@ h2 { margin: 0; }
 /* -------------- NEW TRANSACTIONS----------------------*/
 
 #transaction_new_aa_area_transfer { display: none;}
+#transaction_new_split_area { display: none;}

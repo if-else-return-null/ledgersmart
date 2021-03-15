@@ -2,8 +2,8 @@ function setupTransactionForm(type = "income"){
     console.log("setupTransactionForm", type);
     STATE.view.transaction_type = type
     // fill in the proper category selectors
-    BYID("transaction_new_input_category").innerHTML = STATE.view["cat_options_" + type]
-    BYID("transaction_new_input_date").value = getDateNow()
+    form.tnew.category.innerHTML = STATE.view["cat_options_" + type]
+    form.tnew.date.value = getDateNow()
     if (type === "income") {
         setTrasactionSign(true)
         toggleTransactionTransferArea(true)
@@ -35,9 +35,9 @@ function toggleTransactionTransferArea(value){
 function setTrasactionSign(value){
     STATE.transaction_sign = value
     if (value === true) {
-        BYID("transaction_new_input_amount").style.color = "var(--postext)"
+        form.tnew.amount.style.color = "var(--postext)"
     } else {
-        BYID("transaction_new_input_amount").style.color = "var(--negtext)"
+        form.tnew.amount.style.color = "var(--negtext)"
     }
 
 }
@@ -60,66 +60,85 @@ function clickTransactionSetTag(event) {
     let tag = event.target.id.split("_").pop()
     let tagstr = {check:"#", card:"Card", atm:"ATM", ach:"ACH" }
     console.log("clickTransactionSetTag", tag);
-    BYID("transaction_new_input_tag").value = tagstr[tag]
+    form.tnew.tag.value = tagstr[tag]
     if (tag === "check") {
-        BYID("transaction_new_input_tag").focus()
+        form.tnew.tag.focus()
     }
 }
 
 function clearTrasactionForm(){
     console.log("clearTrasactionForm");
-    BYID("transaction_new_input_amount").style.outline = "none"
-    BYID("transaction_new_input_payee").style.outline = "none"
-    BYID("transaction_new_input_transfer_amount").style.outline = "none"
-    BYID("transaction_new_input_payee").value = ""
-    BYID("transaction_new_input_date").value = getDateNow()
-    BYID("transaction_new_input_amount").value = ""
-    BYID("transaction_new_input_transfer_amount").value = ""
+    form.tnew.reset()
+    form.tnew.amount.style.outline = "none"
+    form.tnew.payee.style.outline = "none"
+    form.tnew.transfer_amount.style.outline = "none"
+    form.tnew.date.value = getDateNow()
+    // clear up and split entrys
+    startTrasactionSplit(true)
+
+}
+
+function startTrasactionSplit(clear = false) {
+    console.log("startTrasactionSplit");
+    // cancel the split
+    if (STATE.view.transaction_split === true || clear === true) {
+        STATE.view.transaction_split = false
+        BYID("transaction_new_button_split").innerHTML = "Split Transaction"
+        BYID("transaction_new_split_area").style.display = "none"
+        BYID("transaction_new_split_items_list").innerHTML = ""
+        STATE.transaction_splits = {}
+
+    } else {
+        STATE.view.transaction_split = true
+        BYID("transaction_new_button_split").innerHTML = "Cancel Split"
+        BYID("transaction_new_split_area").style.display = "block"
+    }
+
 }
 
 function postNewTransaction() {
     // clear any warnings
-    BYID("transaction_new_input_amount").style.outline = "none"
-    BYID("transaction_new_input_payee").style.outline = "none"
-    BYID("transaction_new_input_transfer_amount").style.outline = "none"
+    form.tnew.amount.style.outline = "none"
+    form.tnew.payee.style.outline = "none"
+    form.tnew.transfer_amount.style.outline = "none"
     let valid = true
     let dsitem = {}
     dsitem.ttype = STATE.view.transaction_type
-    dsitem.department = BYID("transaction_new_input_department").value
-    dsitem.date = BYID("transaction_new_input_date").value
-    dsitem.payee = BYID("transaction_new_input_payee").value
+    dsitem.department = form.tnew.department.value
+    dsitem.date = form.tnew.date.value
+    dsitem.payee = form.tnew.payee.value
     if (dsitem.payee === ""){
-        BYID("transaction_new_input_payee").style.outline = "1px solid red"
+        form.tnew.payee.style.outline = "1px solid red"
         valid = false
     }
-    dsitem.category = BYID("transaction_new_input_category").value
-    dsitem.tag = BYID("transaction_new_input_tag").value
-    dsitem.memo = BYID("transaction_new_input_memo").value
+    dsitem.category = form.tnew.category.value
+    dsitem.tag = form.tnew.tag.value
+    dsitem.memo = form.tnew.memo.value
     if (STATE.view.transaction_type !== "transfer") {
-        dsitem.account = BYID("transaction_new_input_account").value
+        dsitem.account = form.tnew.account.value
         //*** update sign according to
-        dsitem.rawAmount = BYID("transaction_new_input_amount").value
+        dsitem.rawAmount = form.tnew.amount.value
         if (dsitem.rawAmount === ""){
-            BYID("transaction_new_input_amount").style.outline = "1px solid red"
+            form.tnew.amount.style.outline = "1px solid red"
             valid = false
         }
-        dsitem.amount = getsignedAmount(BYID("transaction_new_input_amount").value)
+        dsitem.amount = getsignedAmount(dsitem.rawAmount)
 
     } else {
-        dsitem.from_account = BYID("transaction_new_input_from_account").value
-        dsitem.to_account = BYID("transaction_new_input_to_account").value
-        dsitem.amount = BYID("transaction_new_input_transfer_amount").value
+        dsitem.from_account = form.tnew.from_account.value
+        dsitem.to_account = form.tnew.to_account.value
+        dsitem.amount = form.tnew.transfer_amount.value
         if (dsitem.amount === ""){
-            BYID("transaction_new_input_transfer_amount").style.outline = "1px solid red"
+            form.tnew.transfer_amount.style.outline = "1px solid red"
             valid = false
         }
     }
     console.log("postNewTransaction", dsitem);
-    if (valid = false ) {
+    if (valid === false ) {
+        console.log("transaction data NOT valid");
         return;
     }
     console.log("transaction data valid");
-    console.log(document.transaction_new.transaction_new_input_payee.value);
 
 
 

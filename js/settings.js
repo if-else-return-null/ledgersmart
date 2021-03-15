@@ -165,6 +165,8 @@ function setActiveDataStore(){
     updateAccountList()
     updateCategoryList()
 
+    resetUserLoginScreen()
+
 }
 
 function changeActiveDataStore(){
@@ -300,7 +302,7 @@ function updateDepartmentList() {
         icc_department[i].addEventListener("click", clickItemCard);
     }
     // find and fill any html select elements
-    BYID("transaction_new_input_department").innerHTML = html_sel_active
+    form.tnew.department.innerHTML = html_sel_active
 }
 
 gui_temps.account_item_card = `
@@ -346,9 +348,9 @@ function updateAccountList() {
         icc_account[i].addEventListener("click", clickItemCard);
     }
     // find and fill any html select elements
-    BYID("transaction_new_input_account").innerHTML = html_sel_active
-    BYID("transaction_new_input_from_account").innerHTML = html_sel_active
-    BYID("transaction_new_input_to_account").innerHTML = html_sel_active
+    form.tnew.account.innerHTML = html_sel_active
+    form.tnew.from_account.innerHTML = html_sel_active
+    form.tnew.to_account.innerHTML = html_sel_active
 }
 
 gui_temps.category_item_card = `
@@ -429,7 +431,7 @@ function updateCategoryList() {
     STATE.view.cat_options_income = html_sel_active["0"] + html_sel_active["3"]
     STATE.view.cat_options_expence = html_sel_active["1"] + html_sel_active["3"]
     STATE.view.cat_options_transfer = html_sel_active["2"]
-    BYID("transaction_new_input_category").innerHTML = STATE.view.cat_options_income
+    form.tnew.category.innerHTML = STATE.view.cat_options_income
     BYID("data_store_new_category_parent").innerHTML = html_sel_parent
 }
 

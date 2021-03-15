@@ -82,12 +82,12 @@ function handleIncomingMessage(data) {
         if (STATE.dsid === null) {
             switchTabs("main_tab_btn_settings", "main_tab_settings")
             clickWorkTabButton("mt_btn_settings_data")
+            resetUserLoginScreen()
         } else {
             // set the active data store
             setActiveDataStore()
         }
-        // clear/reset/hide  user login modal_user_login
-        setTimeout(resetUserLoginScreen,1500)
+        
     }
     if (data.type === "user_login") {
         // this will only happen on bad login attempts

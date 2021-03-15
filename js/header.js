@@ -30,6 +30,12 @@ STATE.typenames = {
     category:{"0":"Income", "1":"Expence", "2":"Transfer", "3":"N/A"}
 }
 STATE.transaction_sign = true
+STATE.transaction_splits = {}
+let form = {}
+form.tnew = document.transaction_new
+form.tedit = document.transaction_edit
+
+
 //------------------------ws server connection---------------------------------
 function tryConnect() {
     showModal("modal_dynamic", "<h2>Connecting to server</h2>")

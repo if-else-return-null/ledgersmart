@@ -113,9 +113,10 @@ let transaction_new_tag_btns = document.getElementsByClassName("transaction_new_
 for (var i = 0; i < transaction_new_tag_btns.length; i++) {
     transaction_new_tag_btns[i].addEventListener("click", clickTransactionSetTag);
 }
-BYID("transaction_new_amount_change_sign").addEventListener("click", transactionChangeSign);
+form.tnew.change_sign.addEventListener("click", transactionChangeSign);
 BYID("transaction_new_button_post").addEventListener("click", postNewTransaction);
 BYID("transaction_new_button_clear").addEventListener("click", clearTrasactionForm);
+BYID("transaction_new_button_split").addEventListener("click", startTrasactionSplit);
 
 window.addEventListener('contextmenu', (event) => {
       //event.preventDefault();
