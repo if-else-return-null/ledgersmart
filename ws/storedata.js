@@ -1,4 +1,10 @@
 
+let default_items = {
+    "department":[
+        { "client_id": "data.client_id", "uuid":"new", "name":"Home", "notify":false , "dsid":"data.dsid" }
+    ]
+}
+
 function createDataStore(packet){
     console.log("LS: Creating new datastore", packet);
     let client_id = packet.client_id
@@ -25,11 +31,10 @@ function createDataStore(packet){
     LsDataStoreList.id.push(dsid)
 
     // setup inital department and account
-    let create_item = { client_id: client_id, uuid:"new", name:"Home", notify:false , dsid:dsid }
-    updateDataStoreDepartment(create_item)
-    create_item.name = "Cash"
-    create_item.atype = "0"
-    updateDataStoreAccount(create_item)
+    let create_dept = { client_id: client_id, uuid:"new", name:"Home", notify:false , dsid:dsid }
+    updateDataStoreDepartment(create_dept)
+    let create_acct = { client_id: client_id, uuid:"new", name:"Cash", atype:"0", notify:false , dsid:dsid }
+    updateDataStoreAccount(create_acct)
 
     SAVE.datastore(dsid)
     LSUSER[username].lastUsedDataStore = dsid

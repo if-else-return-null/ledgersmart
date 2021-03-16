@@ -842,11 +842,10 @@ function createDataStore(packet){
     LsDataStoreList.id.push(dsid)
 
     // setup inital department and account
-    let create_item = { client_id: client_id, uuid:"new", name:"Home", notify:false , dsid:dsid }
-    updateDataStoreDepartment(create_item)
-    create_item.name = "Cash"
-    create_item.atype = "0"
-    updateDataStoreAccount(create_item)
+    let create_dept = { client_id: client_id, uuid:"new", name:"Home", notify:false , dsid:dsid }
+    updateDataStoreDepartment(create_dept)
+    let create_acct = { client_id: client_id, uuid:"new", name:"Cash", atype:"0", notify:false , dsid:dsid }
+    updateDataStoreAccount(create_acct)
 
     SAVE.datastore(dsid)
     LSUSER[username].lastUsedDataStore = dsid
@@ -1051,12 +1050,13 @@ let transaction_dsitem = {
     account:"account_id",
     category:"category_id",
     amount:1.25, // signed floating point value.
-    number:"check#/ATM/DEBIT", // a string denoting somthing about the transaction
+    tag:"check#/ATM/DEBIT", // a string denoting somthing about the transaction
     memo:"arbitray memo", // a string however you like it
     createdBy:"username",
     createdAt:"getTimeStamp()",
     lastChangedBy:"username",
     lastChangedAt: "getTimeStamp()",
+    split_ids:[], // an array of transaction in a split group
     links:[], //??? array of links to relevent files or web locations
     files:[] //??? array of link to files stored on the server for this transaction
 }
